@@ -30,3 +30,144 @@ dashboard urls: http://182.200.53.73:41984/
   restful urls: https://182.200.53.73:42984
 + echo '  w/ user/pass: admin / 978c009a-1726-45ef-aeac-5be2da32ae56'
   w/ user/pass: admin / 978c009a-1726-45ef-aeac-5be2da32ae56
+
+
+export PATH=./bin:$PATH
+运行 rados lspools | grep rgw
+ceph osd pool application enable $POOL rgw
+
+lttng-sessiond --daemoniz
+lttng-sessiond -d --no-kernel
+../src/vstart.sh -d -n -l -e -o "osd_tracing = true"
+../src/vstart.sh -d -n -o "osd_tracing = true"
+lttng list --userspace
+rados bench -p ec 5 write
+
+
+[global]
+        osd_tracing = true
+        bluestore_tracing = true
+        event_tracing = true
+        osd_function_tracing = true
+        osd_objectstore_tracing = true
+        rbd_tracing = true
+        rados_tracing = true
+        rgw_op_tracing = true
+        rgw_rados_tracing = true
+
+
+OSD=3 MON=3 RGW=1 ../src/vstart.sh -n -o "rbd_blkin_trace_all=true" \
+  -o "osd_tracing = true" \
+  -o "bluestore_tracing = true" \
+  -o "event_tracing = true" \
+  -o "osd_function_tracing = true" \
+  -o "osd_objectstore_tracing = true" \
+  -o "rbd_tracing = true" \
+  -o "rgw_op_tracing = true" \
+  -o "rgw_rados_tracing = true" --mgr_num 0
+
+OSD=3 MON=3 RGW=1 ../src/vstart.sh -x -n -o "rbd_blkin_trace_all=true"   -o "osd_tracing = true"   -o "bluestore_tracing = true"   -o "event_tracing = true"   -o "osd_function_tracing = true"   -o "osd_objectstore_tracing = true"   -o "rbd_tracing = true"   -o "rgw_op_tracing = true"   -o "rgw_rados_tracing = true"
+
+ps aux|grep ceph|awk '{print$2}'|xargs -x kill
+ps aux|grep ceph|awk '{print$2}'|xargs -x -I '{}' kill -9 {}
+ps aux|grep ceph|awk '{print$2}'|while read pid;do echo $pid;kill -9 $pid;done;ps aux|grep ceph
+systemctl stop dse@n73 ceph-mon@n73 ceph-mgr@n73
+
+dashboard urls: http://182.200.53.73:41920/
+  restful urls: https://182.200.53.73:42920
+  w/ user/pass: admin / 
+
+
+export PYTHONPATH=./pybind:/home/xb/project/stor/ceph/ceph/src/pybind:/home/xb/project/stor/ceph/ceph/build/lib/cython_modules/lib.2
+export LD_LIBRARY_PATH=/home/xb/project/stor/ceph/ceph/build/lib
+
+export PYTHONPATH=/usr/local/lib64/python3.6/site-packages/babeltrace:$PYTHONPATH
+
+sudo vim /etc/ld.so.conf.d/sb.conf
+  $ sudo ldconfig 
+  $ cat /etc/ld.so.conf.d/sb.conf 
+  /usr/local/lib
+
+ ceph config-key list
+ ceph mgr module ls
+ ceph mgr module disable dashboard
+ceph auth list
+ceph mgr module disable restful
+
+ps aux |grep lttng-sessiond
+
+
+PID: 1190156 - Name: /home/xb/project/stor/ceph/ceph/build/bin/ceph-osd
+      ust_baddr_statedump:soinfo (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      pg:queue_op (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_post (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_unknown (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_copy_from (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_copy_get (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_copy_get_classic (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omaprmkeys (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omapclear (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omapsetheader (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omapsetvals (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omap_cmp (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omapgetvalsbykeys (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omapgetheader (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omapgetvals (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_omapgetkeys (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_tmap2omap (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_tmapup (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_tmapput (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_tmapget (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_startsync (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_append (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_rmxattr (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_setxattr (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_cache_unpin (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_cache_pin (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_watch (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_clonerange (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_delete (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_truncate (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_create (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_zero (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_rollback (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_writesame (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_writefull (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_write (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_setallochint (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_notify_ack (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_notify (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_assert_src_version (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_list_snaps (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_list_watchers (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_assert_ver (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_cmpxattr (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_getxattrs (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_getxattr (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_cache_evict (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_cache_flush (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_try_flush (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_undirty (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_isdirty (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_stat (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_call (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_sparse_read (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_mapext (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_checksum (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_read (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre_extent_cmp (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:do_osd_op_pre (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:opwq_process_finish (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:opwq_process_start (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:ms_fast_dispatch (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:prepare_tx_exit (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      osd:prepare_tx_enter (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      oprequest:mark_flag_point (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      oprequest:set_rmw_flags (loglevel: TRACE_DEBUG_LINE (13)) (type: tracepoint)
+      zipkin:timestamp (loglevel: TRACE_WARNING (4)) (type: tracepoint)
+      zipkin:keyval_integer (loglevel: TRACE_WARNING (4)) (type: tracepoint)
+      zipkin:keyval_string (loglevel: TRACE_WARNING (4)) (type: tracepoint)
+
+
+../src/vstart.sh -help
+
