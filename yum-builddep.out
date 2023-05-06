@@ -1,0 +1,178 @@
+Loaded plugins: fastestmirror, langpacks
+Enabling base-source repository
+Enabling centos-sclo-rh-source repository
+Enabling centos-sclo-sclo-source repository
+Enabling epel-source repository
+Enabling extras-source repository
+Enabling updates-source repository
+Loading mirror speeds from cached hostfile
+ * base: mirrors.njupt.edu.cn
+ * centos-sclo-rh: mirrors.ustc.edu.cn
+ * centos-sclo-sclo: mirrors.njupt.edu.cn
+ * epel: mirrors.bfsu.edu.cn
+ * epel-source: mirrors.bfsu.edu.cn
+ * extras: mirrors.njupt.edu.cn
+ * updates: mirrors.njupt.edu.cn
+Checking for new repos for mirrors
+Getting requirements for /tmp/install-deps.1594477/ceph.spec
+ --> Already installed : 1:java-1.8.0-openjdk-devel-1.8.0.362.b08-1.el7_9.x86_64
+ --> Already installed : sharutils-4.13.3-8.el7.x86_64
+ --> Already installed : checkpolicy-2.5-8.el7.x86_64
+ --> Already installed : selinux-policy-devel-3.13.1-268.el7_9.2.noarch
+ --> Already installed : python-cherrypy-3.2.2-4.el7.noarch
+ --> Already installed : python-werkzeug-0.9.1-2.el7.noarch
+ --> Already installed : python-coverage-3.6-0.5.b3.el7.x86_64
+ --> Already installed : python-pecan-0.4.5-2.el7.noarch
+ --> Already installed : python-tox-1.4.2-9.el7.noarch
+ --> Already installed : socat-1.7.3.2-2.el7.x86_64
+ --> Already installed : bc-1.06.95-13.el7.x86_64
+ --> Already installed : gperf-3.0.4-8.el7.x86_64
+ --> Already installed : cmake-2.8.12.2-2.el7.x86_64
+ --> Already installed : cryptsetup-2.0.3-6.el7.x86_64
+ --> Already installed : fuse-devel-2.9.2-11.el7.x86_64
+ --> Already installed : gcc-c++-4.8.5-44.el7.x86_64
+ --> Already installed : gdbm-1.10-8.el7.x86_64
+ --> Already installed : gperftools-devel-2.6.1-1.el7.x86_64
+ --> Already installed : jq-1.6-2.el7.x86_64
+ --> Already installed : leveldb-devel-1.12.0-11.el7.x86_64
+ --> Already installed : libaio-devel-0.3.109-13.el7.x86_64
+ --> Already installed : libblkid-devel-2.23.2-65.el7_9.1.x86_64
+ --> Already installed : libcurl-devel-7.29.0-59.el7_9.1.x86_64
+ --> systemd-devel-219-78.el7_9.7.x86_64
+ --> Already installed : libtool-2.4.2-22.el7_3.x86_64
+ --> Already installed : libxml2-devel-2.9.1-6.el7_9.6.x86_64
+ --> Already installed : 1:make-3.82-24.el7.x86_64
+ --> Already installed : parted-3.1-32.el7.x86_64
+ --> Already installed : 4:perl-5.16.3-299.el7_9.x86_64
+ --> Already installed : 1:pkgconfig-0.27.1-4.el7.x86_64
+ --> Already installed : python-2.7.5-92.el7_9.x86_64
+ --> Already installed : python-devel-2.7.5-92.el7_9.x86_64
+ --> Already installed : python-nose-1.3.7-1.el7.noarch
+ --> Already installed : python-requests-2.6.0-10.el7.noarch
+ --> Already installed : python-six-1.9.0-2.el7.noarch
+ --> Already installed : python-virtualenv-15.1.0-7.el7_9.noarch
+ --> Already installed : snappy-devel-1.1.0-3.el7.x86_64
+ --> Already installed : systemd-219-78.hl01.el7.centos.3.x86_64
+ --> Already installed : util-linux-2.23.2-65.el7_9.1.x86_64
+ --> Already installed : 1:valgrind-devel-3.15.0-11.el7.x86_64
+ --> Already installed : which-2.20-7.el7.x86_64
+ --> Already installed : xfsprogs-4.5.0-22.el7.x86_64
+ --> Already installed : xfsprogs-devel-4.5.0-22.el7.x86_64
+ --> Already installed : xmlstarlet-1.6.1-1.el7.x86_64
+ --> Already installed : yasm-1.2.0-4.el7.x86_64
+ --> Already installed : boost-random-1.53.0-28.el7.x86_64
+ --> Already installed : btrfs-progs-4.9.1-1.el7.x86_64
+ --> Already installed : nss-devel-3.79.0-5.el7_9.x86_64
+ --> Already installed : keyutils-libs-devel-1.5.8-3.el7.x86_64
+ --> Already installed : rdma-core-devel-52mlnx1-1.53100.x86_64
+ --> Already installed : openldap-devel-2.4.44-25.el7_9.x86_64
+ --> Already installed : 1:openssl-devel-1.0.2k-26.el7_9.x86_64
+ --> Already installed : redhat-lsb-core-4.1-27.el7.centos.1.x86_64
+ --> Already installed : Cython-0.19-5.el7.x86_64
+ --> Already installed : python-prettytable-0.7.2-3.el7.noarch
+ --> Already installed : python-sphinx-1.1.3-11.el7.noarch
+ --> Already installed : python3-devel-3.6.8-18.el7.x86_64
+ --> Already installed : python3-setuptools-39.2.0-10.el7.noarch
+ --> Already installed : python36-Cython-0.28.6-1.el7.x86_64
+ --> Already installed : lttng-ust-devel-2.4.1-4.el7.x86_64
+ --> Already installed : libbabeltrace-devel-1.2.4-3.el7.x86_64
+ --> Already installed : expat-devel-2.1.0-15.el7_9.x86_64
+ --> Already installed : redhat-rpm-config-9.1.0-88.el7.centos.noarch
+ --> Already installed : junit-4.11-8.el7.noarch
+--> Running transaction check
+---> Package systemd-devel.x86_64 0:219-78.el7_9.7 will be installed
+--> Processing Dependency: systemd-libs = 219-78.el7_9.7 for package: systemd-devel-219-78.el7_9.7.x86_64
+--> Processing Dependency: systemd = 219-78.el7_9.7 for package: systemd-devel-219-78.el7_9.7.x86_64
+--> Running transaction check
+---> Package systemd-devel.x86_64 0:219-78.el7_9.7 will be installed
+--> Processing Dependency: systemd = 219-78.el7_9.7 for package: systemd-devel-219-78.el7_9.7.x86_64
+---> Package systemd-libs.i686 0:219-78.el7_9.7 will be installed
+--> Processing Dependency: libselinux.so.1 for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libpam_misc.so.0(LIBPAM_MISC_1.0) for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libpam_misc.so.0 for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libpam.so.0(LIBPAM_MODUTIL_1.0) for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libpam.so.0(LIBPAM_EXTENSION_1.0) for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libpam.so.0(LIBPAM_1.0) for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libpam.so.0 for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: liblz4.so.1 for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libgpg-error.so.0 for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libgcrypt.so.11(GCRYPT_1.2) for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libgcrypt.so.11 for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libdw.so.1 for package: systemd-libs-219-78.el7_9.7.i686
+--> Processing Dependency: libcap.so.2 for package: systemd-libs-219-78.el7_9.7.i686
+--> Running transaction check
+---> Package elfutils-libs.i686 0:0.176-5.el7 will be installed
+--> Processing Dependency: elfutils-libelf(x86-32) = 0.176-5.el7 for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libz.so.1(ZLIB_1.2.2.3) for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libz.so.1 for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libelf.so.1(ELFUTILS_1.7) for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libelf.so.1(ELFUTILS_1.6) for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libelf.so.1(ELFUTILS_1.5) for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libelf.so.1(ELFUTILS_1.4) for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libelf.so.1(ELFUTILS_1.3) for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libelf.so.1(ELFUTILS_1.1.1) for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libelf.so.1(ELFUTILS_1.0) for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libelf.so.1 for package: elfutils-libs-0.176-5.el7.i686
+--> Processing Dependency: libbz2.so.1 for package: elfutils-libs-0.176-5.el7.i686
+---> Package libcap.i686 0:2.22-11.el7 will be installed
+--> Processing Dependency: libattr.so.1(ATTR_1.0) for package: libcap-2.22-11.el7.i686
+--> Processing Dependency: libattr.so.1 for package: libcap-2.22-11.el7.i686
+---> Package libgcrypt.i686 0:1.5.3-14.el7 will be installed
+---> Package libgpg-error.i686 0:1.12-3.el7 will be installed
+---> Package libselinux.i686 0:2.5-15.el7 will be installed
+--> Processing Dependency: libsepol(x86-32) >= 2.5-10 for package: libselinux-2.5-15.el7.i686
+--> Processing Dependency: libsepol.so.1(LIBSEPOL_1.0) for package: libselinux-2.5-15.el7.i686
+--> Processing Dependency: libsepol.so.1 for package: libselinux-2.5-15.el7.i686
+--> Processing Dependency: libpcre.so.1 for package: libselinux-2.5-15.el7.i686
+---> Package lz4.i686 0:1.8.3-1.el7 will be installed
+---> Package pam.i686 0:1.1.8-23.el7 will be installed
+--> Processing Dependency: libdb-5.3.so for package: pam-1.1.8-23.el7.i686
+--> Processing Dependency: libcrack.so.2 for package: pam-1.1.8-23.el7.i686
+--> Processing Dependency: libaudit.so.1 for package: pam-1.1.8-23.el7.i686
+---> Package systemd-devel.x86_64 0:219-78.el7_9.7 will be installed
+--> Processing Dependency: systemd = 219-78.el7_9.7 for package: systemd-devel-219-78.el7_9.7.x86_64
+--> Running transaction check
+---> Package audit-libs.i686 0:2.8.5-4.el7 will be installed
+--> Processing Dependency: libcap-ng.so.0 for package: audit-libs-2.8.5-4.el7.i686
+---> Package bzip2-libs.i686 0:1.0.6-13.el7 will be installed
+---> Package cracklib.i686 0:2.9.0-11.el7 will be installed
+---> Package elfutils-libelf.i686 0:0.176-5.el7 will be installed
+---> Package libattr.i686 0:2.4.46-13.el7 will be installed
+---> Package libdb.i686 0:5.3.21-25.el7 will be installed
+---> Package libsepol.i686 0:2.5-10.el7 will be installed
+---> Package pcre.i686 0:8.32-17.el7 will be installed
+--> Processing Dependency: libstdc++.so.6(GLIBCXX_3.4.9) for package: pcre-8.32-17.el7.i686
+--> Processing Dependency: libstdc++.so.6(GLIBCXX_3.4) for package: pcre-8.32-17.el7.i686
+--> Processing Dependency: libstdc++.so.6(CXXABI_1.3) for package: pcre-8.32-17.el7.i686
+--> Processing Dependency: libstdc++.so.6 for package: pcre-8.32-17.el7.i686
+---> Package systemd-devel.x86_64 0:219-78.el7_9.7 will be installed
+--> Processing Dependency: systemd = 219-78.el7_9.7 for package: systemd-devel-219-78.el7_9.7.x86_64
+---> Package zlib.i686 0:1.2.7-21.el7_9 will be installed
+--> Running transaction check
+---> Package libcap-ng.i686 0:0.7.5-4.el7 will be installed
+---> Package libstdc++.i686 0:4.8.5-44.el7 will be installed
+---> Package systemd-devel.x86_64 0:219-78.el7_9.7 will be installed
+--> Processing Dependency: systemd = 219-78.el7_9.7 for package: systemd-devel-219-78.el7_9.7.x86_64
+
+Packages skipped because of dependency problems:
+    audit-libs-2.8.5-4.el7.i686 from base
+    bzip2-libs-1.0.6-13.el7.i686 from base
+    cracklib-2.9.0-11.el7.i686 from base
+    elfutils-libelf-0.176-5.el7.i686 from base
+    elfutils-libs-0.176-5.el7.i686 from base
+    libattr-2.4.46-13.el7.i686 from base
+    libcap-2.22-11.el7.i686 from base
+    libcap-ng-0.7.5-4.el7.i686 from base
+    libdb-5.3.21-25.el7.i686 from base
+    libgcrypt-1.5.3-14.el7.i686 from base
+    libgpg-error-1.12-3.el7.i686 from base
+    libselinux-2.5-15.el7.i686 from base
+    libsepol-2.5-10.el7.i686 from base
+    libstdc++-4.8.5-44.el7.i686 from base
+    lz4-1.8.3-1.el7.i686 from base
+    pam-1.1.8-23.el7.i686 from base
+    pcre-8.32-17.el7.i686 from base
+    systemd-devel-219-78.el7_9.7.x86_64 from updates
+    systemd-libs-219-78.el7_9.7.i686 from updates
+    zlib-1.2.7-21.el7_9.i686 from updates
+No uninstalled build requires

@@ -14,6 +14,9 @@ fi
 
 mkdir build
 cd build
+ARGS+=" -DWITH_LTTNG=ON"
+ARGS+=" -DWITH_BLKIN=ON"
+echo -e "cmd:cmake -DBOOST_J=$(nproc) $ARGS $@ .."
 cmake -DBOOST_J=$(nproc) $ARGS "$@" ..
 
 # minimal config to find plugins

@@ -12,7 +12,7 @@
 #  version 2.1 of the License, or (at your option) any later version.
 #
 DIR=/tmp/install-deps.$$
-trap "rm -fr $DIR" EXIT
+#trap "rm -fr $DIR" EXIT
 mkdir -p $DIR
 if test $(id -u) != 0 ; then
     SUDO=sudo
@@ -22,11 +22,13 @@ export LC_ALL=C # the following is vulnerable to i18n
 ARCH=$(uname -m)
 
 function munge_ceph_spec_in {
+    echo -e "munge_ceph_spec_in"
     local OUTFILE=$1
     sed -e 's/@//g' -e 's/%bcond_with make_check/%bcond_without make_check/g' < ceph.spec.in > $OUTFILE
 }
 
 function ensure_decent_gcc_on_deb {
+    echo -e "ensure_decent_gcc_on_deb"
     # point gcc to the one offered by distro if the used one is different
     local old=$(gcc -dumpversion)
     local new=$1
@@ -185,7 +187,7 @@ else
         ;;
     centos|fedora|rhel|ol|virtuozzo)
         yumdnf="yum"
-        builddepcmd="yum-builddep -y --setopt=*.skip_if_unavailable=true"
+        builddepcmd="yum-builddep -y --setopt=*.skip_if_unavailable=true --skip-broken"
         if test "$(echo "$VERSION_ID >= 22" | bc)" -ne 0; then
             yumdnf="dnf"
             builddepcmd="dnf -y builddep --allowerasing"
@@ -233,9 +235,13 @@ else
                 fi
                 ;;
         esac
+        echo -e "ceph.spec $DIR/ceph.spec"
         munge_ceph_spec_in $DIR/ceph.spec
         $SUDO $yumdnf install -y \*rpm-macros
+        cp $DIR/ceph.spec ceph.spec.install
+        echo -e "cmd: $SUDO $builddepcmd $DIR/ceph.spec 2>&1 | tee $DIR/yum-builddep.out"
         $SUDO $builddepcmd $DIR/ceph.spec 2>&1 | tee $DIR/yum-builddep.out
+        cp $DIR/yum-builddep.out .
         [ ${PIPESTATUS[0]} -ne 0 ] && exit 1
 	if [ -n "$dts_ver" ]; then
             ensure_decent_gcc_on_rh $dts_ver
@@ -269,18 +275,20 @@ else
 fi
 
 function populate_wheelhouse() {
+    echo -e "populate_wheelhouse"
     local install=$1
     shift
 
     # although pip comes with virtualenv, having a recent version
     # of pip matters when it comes to using wheel packages
-    pip --timeout 300 $install 'setuptools >= 0.8' 'pip >= 7.0' 'wheel >= 0.24' || return 1
+    pip --timeout 60 -vvv $install 'setuptools >= 0.8' 'pip >= 7.0' 'wheel >= 0.24' || return 1
     if test $# != 0 ; then
-        pip --timeout 300 $install $@ || return 1
+        pip --timeout 60 -vvv $install $@ || return 1
     fi
 }
 
 function activate_virtualenv() {
+    echo -e "activate_virtualenv"
     local top_srcdir=$1
     local interpreter=$2
     local env_dir=$top_srcdir/install-deps-$interpreter
@@ -295,7 +303,8 @@ function activate_virtualenv() {
         ${env_dir}_tmp/bin/pip install --upgrade setuptools
         ${env_dir}_tmp/bin/pip install --upgrade virtualenv
         ${env_dir}_tmp/bin/virtualenv --python $interpreter $env_dir
-        rm -rf ${env_dir}_tmp
+        # rm -rf ${env_dir}_tmp
+        cp -r ${env_dir}_tmp ${env_dir}_tmp_bak
 
         . $env_dir/bin/activate
         if ! populate_wheelhouse install ; then
@@ -317,9 +326,14 @@ wip_wheelhouse=wheelhouse-wip
 #
 # preload python modules so that tox can run without network access
 #
+
+#change pip repo
+# pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+# pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
 find . -name tox.ini | while read ini ; do
     (
-        cd $(dirname $ini)
+        cd $(dirname $ini) # cd ./src/ceph-disk
         require=$(ls *requirements.txt 2>/dev/null | sed -e 's/^/-r /')
         md5=wheelhouse/md5
         if test "$require"; then
@@ -327,10 +341,13 @@ find . -name tox.ini | while read ini ; do
                 rm -rf wheelhouse
             fi
         fi
+        echo -e "pwd:$(pwd)"
         if test "$require" && ! test -d wheelhouse ; then
             for interpreter in python2.7 python3 ; do
                 type $interpreter > /dev/null 2>&1 || continue
+                echo -e "cmd:activate_virtualenv $top_srcdir $interpreter"
                 activate_virtualenv $top_srcdir $interpreter || exit 1
+                echo -e "cmd:populate_wheelhouse wheel -w $wip_wheelhouse $require"
                 populate_wheelhouse "wheel -w $wip_wheelhouse" $require || exit 1
             done
             mv $wip_wheelhouse wheelhouse

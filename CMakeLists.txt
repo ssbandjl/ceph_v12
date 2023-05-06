@@ -352,7 +352,7 @@ find_package(dpdk)
 set(HAVE_DPDK ${DPDK_FOUND})
 endif(WITH_DPDK)
 
-option(WITH_BLKIN "Use blkin to emit LTTng tracepoints for Zipkin" OFF)
+option(WITH_BLKIN "Use blkin to emit LTTng tracepoints for Zipkin" ON)
 if(WITH_BLKIN)
   set(BLKIN_LIBRARIES blkin lttng-ust)
   include_directories(src/blkin/blkin-lib)
@@ -495,7 +495,7 @@ option(DEBUG_GATHER "C_Gather debugging is enabled" ON)
 option(ENABLE_COVERAGE "Coverage is enabled" OFF)
 option(PG_DEBUG_REFS "PG Ref debugging is enabled" OFF)
 
-option(WITH_TESTS "enable the build of ceph-test package scripts/binaries" ON)
+option(WITH_TESTS "enable the build of ceph-test package scripts/binaries" OFF)
 
 option(WITH_FIO "Support for fio engines" OFF)
 if(WITH_FIO)
@@ -636,4 +636,4 @@ add_tags(ctags
   EXCLUDE_OPTS ${CTAG_EXCLUDES}
   EXCLUDES "*.js" "*.css")
 add_custom_target(tags DEPENDS ctags)
-  VERSION 12.2.14
+set(VERSION 12.2.14)

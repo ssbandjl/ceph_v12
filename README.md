@@ -117,13 +117,22 @@ are committed to git.)
 
 
 ## Running a test cluster
+运行测试集群
 
 To run a functional test cluster,
 
 	cd build
 	make vstart        # builds just enough to run vstart
-	../src/vstart.sh -d -n -x -l
+	../src/vstart.sh -d -n -x -l #-l(localhost)
 	./bin/ceph -s
+	export CEPH_CONF=./ceph.conf
+	./bin/ceph -s -c ceph.conf
+./bin/ceph mds dump --format=json-pretty
+./bin/ceph osd pool ls detail
+
+stop
+sh ../src/stop.sh all
+
 
 Almost all of the usual commands are available in the bin/ directory.
 For example,
