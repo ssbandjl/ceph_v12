@@ -422,6 +422,7 @@ static void _list_modules(
   const std::string path,
   std::set<std::string> *modules)
 {
+  dout(4) << "path:" << path << __FFL__ << dendl;
   DIR *dir = opendir(path.c_str());
   if (!dir) {
     return;

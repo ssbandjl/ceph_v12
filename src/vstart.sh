@@ -525,7 +525,7 @@ $COSDMEMSTORE
 $COSDSHORT
 $extra_conf
 [mon]
-        mgr initial modules = restful status dashboard balancer
+        mgr initial modules = restful status balancer
         mon pg warn min per osd = 3
         mon osd allow primary affinity = true
         mon reweight min pgs per osd = 4

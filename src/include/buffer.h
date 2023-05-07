@@ -62,7 +62,7 @@
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 #ifndef __FFL__
-#define __FFL__ "" << __func__ << " " << __FILENAME__ << ":" << __LINE__
+#define __FFL__ " " << __func__ << " " << __FILENAME__ << ":" << __LINE__
 #endif
 
 #if __GNUC__ >= 4

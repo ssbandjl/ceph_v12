@@ -92,9 +92,9 @@ sudo vim /etc/ld.so.conf.d/sb.conf
   $ cat /etc/ld.so.conf.d/sb.conf 
   /usr/local/lib
 
- ceph config-key list
- ceph mgr module ls
- ceph mgr module disable dashboard
+ceph config-key list
+ceph mgr module ls
+ceph mgr module disable dashboard
 ceph auth list
 ceph mgr module disable restful
 
@@ -195,3 +195,75 @@ install-deps-python3_tmp_bak
 <<EOF
 
 
+2023-05-07 10:22:38.372811 7fffeb0d5700  1 mgr init Loading python module 'balancer'init PyModuleRegistry.cc:165
+2023-05-07 10:22:38.534696 7fffeb0d5700  1 mgr init Loading python module 'dashboard'init PyModuleRegistry.cc:165
+LTTng-UST: Error (-17) while registering tracepoint probe. Duplicate registration of tracepoint probes having the same name is not allowed.
+
+Program received signal SIGABRT, Aborted.
+[Switching to Thread 0x7fffeb0d5700 (LWP 2814992)]
+0x00007ffff491a387 in raise () from /lib64/libc.so.6
+Missing separate debuginfos, use: debuginfo-install glibc-2.17-326.el7_9.x86_64 gperftools-libs-2.6.1-1.el7.x86_64 keyutils-libs-1.5.8-3.el7.x86_64 krb5-libs-1.15.1-55.el7_9.x86_64 libblkid-2.29-2.el7.centos.x86_64 libcom_err-1.42.9-19.el7.x86_64 libgcc-4.8.5-44.el7.x86_64 libibverbs-52mlnx1-1.53100.x86_64 libnl3-3.2.28-4.el7.x86_64 libselinux-2.5-15.el7.x86_64 libstdc++-4.8.5-44.el7.x86_64 libuuid-2.29-2.el7.centos.x86_64 lttng-ust-2.4.1-4.el7.x86_64 nspr-4.34.0-3.1.el7_9.x86_64 nss-3.79.0-5.el7_9.x86_64 nss-softokn-3.79.0-4.el7_9.x86_64 nss-softokn-freebl-3.79.0-4.el7_9.x86_64 nss-util-3.79.0-1.el7_9.x86_64 openssl-libs-1.0.2k-26.el7_9.x86_64 pcre-8.32-17.el7.x86_64 python-libs-2.7.5-92.el7_9.x86_64 python-markupsafe-0.11-10.el7.x86_64 sqlite-3.35.1-hl1.el7.x86_64 userspace-rcu-0.7.16-1.el7.x86_64 zlib-1.2.7-21.el7_9.x86_64
+(gdb) bt
+#0  0x00007ffff491a387 in raise () from /lib64/libc.so.6
+#1  0x00007ffff491ba78 in abort () from /lib64/libc.so.6
+#2  0x00007fffd236ff6b in __lttng_events_init__zipkin () at /usr/include/lttng/ust-tracepoint-event.h:782
+#3  0x00007ffff7dea9c3 in _dl_init_internal () from /lib64/ld-linux-x86-64.so.2
+#4  0x00007ffff7def59e in dl_open_worker () from /lib64/ld-linux-x86-64.so.2
+#5  0x00007ffff7dea7d4 in _dl_catch_error () from /lib64/ld-linux-x86-64.so.2
+#6  0x00007ffff7deeb8b in _dl_open () from /lib64/ld-linux-x86-64.so.2
+#7  0x00007ffff75c5fab in dlopen_doit () from /lib64/libdl.so.2
+#8  0x00007ffff7dea7d4 in _dl_catch_error () from /lib64/ld-linux-x86-64.so.2
+#9  0x00007ffff75c65ad in _dlerror_run () from /lib64/libdl.so.2
+#10 0x00007ffff75c6041 in dlopen@@GLIBC_2.2.5 () from /lib64/libdl.so.2
+#11 0x00007ffff7b20a4f in _PyImport_GetDynLoadFunc () from /lib64/libpython2.7.so.1.0
+#12 0x00007ffff7b0934e in _PyImport_LoadDynamicModule () from /lib64/libpython2.7.so.1.0
+#13 0x00007ffff7b07451 in import_submodule () from /lib64/libpython2.7.so.1.0
+#14 0x00007ffff7b07736 in load_next () from /lib64/libpython2.7.so.1.0
+#15 0x00007ffff7b0807e in PyImport_ImportModuleLevel () from /lib64/libpython2.7.so.1.0
+#16 0x00007ffff7aeb32f in builtin___import__ () from /lib64/libpython2.7.so.1.0
+#17 0x00007ffff7a5b073 in PyObject_Call () from /lib64/libpython2.7.so.1.0
+#18 0x00007ffff7aecf07 in PyEval_CallObjectWithKeywords () from /lib64/libpython2.7.so.1.0
+#19 0x00007ffff7af1bc5 in PyEval_EvalFrameEx () from /lib64/libpython2.7.so.1.0
+#20 0x00007ffff7af664d in PyEval_EvalCodeEx () from /lib64/libpython2.7.so.1.0
+#21 0x00007ffff7af6752 in PyEval_EvalCode () from /lib64/libpython2.7.so.1.0
+#22 0x00007ffff7b0653c in PyImport_ExecCodeModuleEx () from /lib64/libpython2.7.so.1.0
+#23 0x00007ffff7b067b8 in load_source_module () from /lib64/libpython2.7.so.1.0
+#24 0x00007ffff7b07451 in import_submodule () from /lib64/libpython2.7.so.1.0
+#25 0x00007ffff7b0769d in load_next () from /lib64/libpython2.7.so.1.0
+#26 0x00007ffff7b0807e in PyImport_ImportModuleLevel () from /lib64/libpython2.7.so.1.0
+#27 0x00007ffff7aeb32f in builtin___import__ () from /lib64/libpython2.7.so.1.0
+#28 0x00007ffff7a5b073 in PyObject_Call () from /lib64/libpython2.7.so.1.0
+#29 0x00007ffff7aecf07 in PyEval_CallObjectWithKeywords () from /lib64/libpython2.7.so.1.0
+#30 0x00007ffff7af1bc5 in PyEval_EvalFrameEx () from /lib64/libpython2.7.so.1.0
+#31 0x00007ffff7af664d in PyEval_EvalCodeEx () from /lib64/libpython2.7.so.1.0
+#32 0x00007ffff7af6752 in PyEval_EvalCode () from /lib64/libpython2.7.so.1.0
+#33 0x00007ffff7b0653c in PyImport_ExecCodeModuleEx () from /lib64/libpython2.7.so.1.0
+#34 0x00007ffff7b067b8 in load_source_module () from /lib64/libpython2.7.so.1.0
+#35 0x00007ffff7b07c4a in load_package () from /lib64/libpython2.7.so.1.0
+#36 0x00007ffff7b07451 in import_submodule () from /lib64/libpython2.7.so.1.0
+#37 0x00007ffff7b0769d in load_next () from /lib64/libpython2.7.so.1.0
+#38 0x00007ffff7b0807e in PyImport_ImportModuleLevel () from /lib64/libpython2.7.so.1.0
+#39 0x00007ffff7aeb32f in builtin___import__ () from /lib64/libpython2.7.so.1.0
+#40 0x00007ffff7a5b073 in PyObject_Call () from /lib64/libpython2.7.so.1.0
+#41 0x00007ffff7a5b155 in call_function_tail () from /lib64/libpython2.7.so.1.0
+#42 0x00007ffff7a5b23e in PyObject_CallFunction () from /lib64/libpython2.7.so.1.0
+#43 0x00007ffff7b08b22 in PyImport_Import () from /lib64/libpython2.7.so.1.0
+#44 0x000055555584472d in PyModule::load (this=this@entry=0x55555ee079b0, pMainThreadState=<optimized out>) at /home/xb/project/stor/ceph/ceph/src/mgr/PyModuleRegistry.cc:261
+#45 0x00005555558459d9 in PyModuleRegistry::init (this=this@entry=0x7fffffffe118, map=...) at /home/xb/project/stor/ceph/ceph/src/mgr/PyModuleRegistry.cc:167
+#46 0x00005555558598ec in MgrStandby::handle_mgr_map (this=this@entry=0x7fffffffc320, mmap=mmap@entry=0x55555ebb5200) at /home/xb/project/stor/ceph/ceph/src/mgr/MgrStandby.cc:316
+#47 0x000055555585aca0 in MgrStandby::ms_dispatch (this=0x7fffffffc320, m=0x55555ebb5200) at /home/xb/project/stor/ceph/ceph/src/mgr/MgrStandby.cc:376
+#48 0x0000555555c7e982 in ms_deliver_dispatch (m=0x55555ebb5200, this=0x55555eb6d500) at /home/xb/project/stor/ceph/ceph/src/msg/Messenger.h:668
+#49 DispatchQueue::entry (this=0x55555eb6d678) at /home/xb/project/stor/ceph/ceph/src/msg/DispatchQueue.cc:197
+#50 0x0000555555a4736d in DispatchQueue::DispatchThread::entry (this=<optimized out>) at /home/xb/project/stor/ceph/ceph/src/msg/DispatchQueue.h:101
+#51 0x00007ffff590eea5 in start_thread () from /lib64/libpthread.so.0
+#52 0x00007ffff49e2b0d in clone () from /lib64/libc.so.6
+(gdb) info locals
+No symbol table info
+
+gdb --args /home/xb/project/stor/ceph/ceph/build/bin/ceph-mgr -i x -c /home/xb/project/stor/ceph/ceph/build/ceph.conf -d
+mgr_module_path
+
+void MgrStandby::send_beacon() 发送信号
+_list_modules
+path, /home/xb/project/stor/ceph/ceph/src/pybind/mgr, 
+mgr initial modules = restful status dashboard balancer
