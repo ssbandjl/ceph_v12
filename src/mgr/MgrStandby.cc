@@ -123,7 +123,7 @@ int MgrStandby::init()
   }
   r = monc.authenticate();
   if (r < 0) {
-    derr << "Authentication failed, did you specify a mgr ID with a valid keyring?" << dendl;
+    derr << "Authentication failed, did you specify a mgr ID with a valid keyring?" << __FFL__ << dendl;
     monc.shutdown();
     client_messenger->shutdown();
     client_messenger->wait();
@@ -142,14 +142,14 @@ int MgrStandby::init()
 
   tick();
 
-  dout(4) << "Complete." << dendl;
+  dout(4) << "Complete." << __FFL__ << dendl;
   return 0;
 }
 
 void MgrStandby::send_beacon()
 {
   assert(lock.is_locked_by_me());
-  dout(1) << state_str() << dendl;
+  dout(1) << state_str() << __FFL__ << dendl;
 
   set<string> modules;
   PyModuleRegistry::list_modules(&modules);
@@ -159,7 +159,7 @@ void MgrStandby::send_beacon()
   bool available = active_mgr != nullptr && active_mgr->is_initialized();
 
   auto addr = available ? active_mgr->get_server_addr() : entity_addr_t();
-  dout(10) << "sending beacon as gid " << monc.get_global_id() << dendl;
+  dout(10) << "sending beacon as gid " << monc.get_global_id() << __FFL__ << dendl;
 
   map<string,string> metadata;
   collect_sys_info(&metadata, g_ceph_context);
@@ -179,7 +179,7 @@ void MgrStandby::send_beacon()
       // it needs the python modules to have loaded.
       m->set_command_descs(active_mgr->get_command_set());
       dout(4) << "going active, including " << m->get_command_descs().size()
-              << " commands in beacon" << dendl;
+              << " commands in beacon" << __FFL__ << dendl;
     }
 
     m->set_services(active_mgr->get_services());
@@ -190,7 +190,7 @@ void MgrStandby::send_beacon()
 
 void MgrStandby::tick()
 {
-  dout(10) << __func__ << dendl;
+  dout(10) << __func__ << __FFL__ << dendl;
   send_beacon();
 
   if (active_mgr && active_mgr->is_initialized()) {
@@ -208,7 +208,7 @@ void MgrStandby::handle_signal(int signum)
 {
   Mutex::Locker l(lock);
   assert(signum == SIGINT || signum == SIGTERM);
-  derr << "*** Got signal " << sig_str(signum) << " ***" << dendl;
+  derr << "*** Got signal " << sig_str(signum) << " ***" << __FFL__ << dendl;
   shutdown();
 }
 
@@ -217,7 +217,7 @@ void MgrStandby::shutdown()
   // Expect already to be locked as we're called from signal handler
   assert(lock.is_locked_by_me());
 
-  dout(4) << "Shutting down" << dendl;
+  dout(4) << "Shutting down" << __FFL__ << dendl;
 
   // stop sending beacon first, i use monc to talk with monitors
   timer.shutdown();
@@ -241,10 +241,10 @@ void MgrStandby::shutdown()
 void MgrStandby::respawn()
 {
   char *new_argv[orig_argc+1];
-  dout(1) << " e: '" << orig_argv[0] << "'" << dendl;
+  dout(1) << " e: '" << orig_argv[0] << "'" << __FFL__ << dendl;
   for (int i=0; i<orig_argc; i++) {
     new_argv[i] = (char *)orig_argv[i];
-    dout(1) << " " << i << ": '" << orig_argv[i] << "'" << dendl;
+    dout(1) << " " << i << ": '" << orig_argv[i] << "'" << __FFL__ << dendl;
   }
   new_argv[orig_argc] = NULL;
 
@@ -258,22 +258,22 @@ void MgrStandby::respawn()
     char buf[PATH_MAX];
     char *cwd = getcwd(buf, sizeof(buf));
     assert(cwd);
-    dout(1) << " cwd " << cwd << dendl;
+    dout(1) << " cwd " << cwd << __FFL__ << dendl;
 
     /* Fall back to a best-effort: just running in our CWD */
     strncpy(exe_path, orig_argv[0], PATH_MAX-1);
   } else {
-    dout(1) << "respawning with exe " << exe_path << dendl;
+    dout(1) << "respawning with exe " << exe_path << __FFL__ << dendl;
     strcpy(exe_path, PROCPREFIX "/proc/self/exe");
   }
 
-  dout(1) << " exe_path " << exe_path << dendl;
+  dout(1) << " exe_path " << exe_path << __FFL__ << dendl;
 
   unblock_all_signals(NULL);
   execv(exe_path, new_argv);
 
   derr << "respawn execv " << orig_argv[0]
-       << " failed with " << cpp_strerror(errno) << dendl;
+       << " failed with " << cpp_strerror(errno) << __FFL__ << dendl;
   ceph_abort();
 }
 
@@ -307,10 +307,10 @@ void MgrStandby::_update_log_config()
 void MgrStandby::handle_mgr_map(MMgrMap* mmap)
 {
   auto &map = mmap->get_map();
-  dout(4) << "received map epoch " << map.get_epoch() << dendl;
+  dout(4) << "received map epoch " << map.get_epoch() << __FFL__ << dendl;
   const bool active_in_map = map.active_gid == monc.get_global_id();
   dout(4) << "active in map: " << active_in_map
-          << " active is " << map.active_gid << dendl;
+          << " active is " << map.active_gid << __FFL__ << dendl;
 
   if (!py_module_registry.is_initialized()) {
     int r = py_module_registry.init(map);
@@ -326,7 +326,7 @@ void MgrStandby::handle_mgr_map(MMgrMap* mmap)
 
   if (active_in_map) {
     if (!active_mgr) {
-      dout(1) << "Activating!" << dendl;
+      dout(1) << "Activating!" << __FFL__ << dendl;
       active_mgr.reset(new Mgr(&monc, map, &py_module_registry,
                                client_messenger.get(), &objecter,
 			       &client, clog, audit_clog));
@@ -337,9 +337,9 @@ void MgrStandby::handle_mgr_map(MMgrMap* mmap)
               Mutex::Locker l(lock);
               send_beacon();
             }));
-      dout(1) << "I am now activating" << dendl;
+      dout(1) << "I am now activating" << __FFL__ << dendl;
     } else {
-      dout(10) << "I was already active" << dendl;
+      dout(10) << "I was already active" << __FFL__ << dendl;
       bool need_respawn = active_mgr->got_mgr_map(map);
       if (need_respawn) {
 	respawn();
@@ -347,11 +347,11 @@ void MgrStandby::handle_mgr_map(MMgrMap* mmap)
     }
 
     if (!available_in_map && map.get_available()) {
-      dout(4) << "Map now says I am available" << dendl;
+      dout(4) << "Map now says I am available" << __FFL__ << dendl;
       available_in_map = true;
     }
   } else if (active_mgr != nullptr) {
-    derr << "I was active but no longer am" << dendl;
+    derr << "I was active but no longer am" << __FFL__ << dendl;
     respawn();
   } else {
     if (map.active_gid != 0 && map.active_name != g_conf->name.get_id()) {
@@ -370,7 +370,7 @@ bool MgrStandby::ms_dispatch(Message *m)
 {
   Mutex::Locker l(lock);
   bool handled = false;
-  dout(4) << state_str() << " " << *m << dendl;
+  dout(4) << state_str() << " " << *m << __FFL__ << dendl;
 
   if (m->get_type() == MSG_MGR_MAP) {
     handle_mgr_map(static_cast<MMgrMap*>(m));

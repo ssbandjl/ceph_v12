@@ -80,11 +80,11 @@ void MetadataUpdate::finish(int r)
           outbl.to_str(), json_result);
       if (!read_ok) {
         dout(1) << "mon returned invalid JSON for "
-                << key.first << "." << key.second << dendl;
+                << key.first << "." << key.second << __FFL__ << dendl;
         return;
       }
       dout(4) << "mon returned valid metadata JSON for "
-              << key.first << "." << key.second << dendl;
+              << key.first << "." << key.second << __FFL__ << dendl;
 
       json_spirit::mObject daemon_meta = json_result.get_obj();
 
@@ -133,7 +133,7 @@ void MetadataUpdate::finish(int r)
   } else {
     dout(1) << "mon failed to return metadata for "
             << key.first << "." << key.second << ": "
-	    << cpp_strerror(r) << dendl;
+	    << cpp_strerror(r) << __FFL__ << dendl;
   }
 }
 
@@ -161,17 +161,17 @@ void Mgr::init()
   // Start communicating with daemons to learn statistics etc
   int r = server.init(monc->get_global_id(), client_messenger->get_myaddr());
   if (r < 0) {
-    derr << "Initialize server fail: " << cpp_strerror(r) << dendl;
+    derr << "Initialize server fail: " << cpp_strerror(r) << __FFL__ << dendl;
     // This is typically due to a bind() failure, so let's let
     // systemd restart us.
     exit(1);
   }
-  dout(4) << "Initialized server at " << server.get_myaddr() << dendl;
+  dout(4) << "Initialized server at " << server.get_myaddr() << __FFL__ << dendl;
 
   // Preload all daemon metadata (will subsequently keep this
   // up to date by watching maps, so do the initial load before
   // we subscribe to any maps)
-  dout(4) << "Loading daemon metadata..." << dendl;
+  dout(4) << "Loading daemon metadata..." << __FFL__ << dendl;
   load_all_metadata();
 
   // subscribe to all the maps
@@ -180,7 +180,7 @@ void Mgr::init()
   monc->sub_want("fsmap", 0, 0);
   monc->sub_want("servicemap", 0, 0);
 
-  dout(4) << "waiting for OSDMap..." << dendl;
+  dout(4) << "waiting for OSDMap..." << __FFL__ << dendl;
   // Subscribe to OSDMap update to pass on to ClusterState
   objecter->maybe_request_map();
 
@@ -201,12 +201,12 @@ void Mgr::init()
   });
 
   // Wait for FSMap
-  dout(4) << "waiting for FSMap..." << dendl;
+  dout(4) << "waiting for FSMap..." << __FFL__ << dendl;
   while (!cluster_state.have_fsmap()) {
     fs_map_cond.Wait(lock);
   }
 
-  dout(4) << "waiting for config-keys..." << dendl;
+  dout(4) << "waiting for config-keys..." << __FFL__ << dendl;
 
   // Preload config keys (`get` for plugins is to be a fast local
   // operation, we we don't have to synchronize these later because
@@ -214,19 +214,19 @@ void Mgr::init()
   auto loaded_config = load_config();
 
   // Wait for MgrDigest...
-  dout(4) << "waiting for MgrDigest..." << dendl;
+  dout(4) << "waiting for MgrDigest..." << __FFL__ << dendl;
   while (!digest_received) {
     digest_cond.Wait(lock);
   }
 
   // assume finisher already initialized in background_init
-  dout(4) << "starting python modules..." << dendl;
+  dout(4) << "starting python modules..." << __FFL__ << dendl;
   py_module_registry->active_start(loaded_config, daemon_state, cluster_state, *monc,
       clog, *objecter, *client, finisher);
 
   cluster_state.final_init();
 
-  dout(4) << "Complete." << dendl;
+  dout(4) << "Complete." << __FFL__ << dendl;
   initializing = false;
   initialized = true;
 }
@@ -255,7 +255,7 @@ void Mgr::load_all_metadata()
   for (auto &metadata_val : mds_cmd.json_result.get_array()) {
     json_spirit::mObject daemon_meta = metadata_val.get_obj();
     if (daemon_meta.count("hostname") == 0) {
-      dout(1) << "Skipping incomplete metadata entry" << dendl;
+      dout(1) << "Skipping incomplete metadata entry" << __FFL__ << dendl;
       continue;
     }
 
@@ -277,7 +277,7 @@ void Mgr::load_all_metadata()
   for (auto &metadata_val : mon_cmd.json_result.get_array()) {
     json_spirit::mObject daemon_meta = metadata_val.get_obj();
     if (daemon_meta.count("hostname") == 0) {
-      dout(1) << "Skipping incomplete metadata entry" << dendl;
+      dout(1) << "Skipping incomplete metadata entry" << __FFL__ << dendl;
       continue;
     }
 
@@ -299,10 +299,10 @@ void Mgr::load_all_metadata()
   for (auto &osd_metadata_val : osd_cmd.json_result.get_array()) {
     json_spirit::mObject osd_metadata = osd_metadata_val.get_obj();
     if (osd_metadata.count("hostname") == 0) {
-      dout(1) << "Skipping incomplete metadata entry" << dendl;
+      dout(1) << "Skipping incomplete metadata entry" << __FFL__ << dendl;
       continue;
     }
-    dout(4) << osd_metadata.at("hostname").get_str() << dendl;
+    dout(4) << osd_metadata.at("hostname").get_str() << __FFL__ << dendl;
 
     DaemonStatePtr dm = std::make_shared<DaemonState>(daemon_state.types);
     dm->key = DaemonKey("osd",
@@ -324,7 +324,7 @@ std::map<std::string, std::string> Mgr::load_config()
 {
   assert(lock.is_locked_by_me());
 
-  dout(10) << "listing keys" << dendl;
+  dout(10) << "listing keys" << __FFL__ << dendl;
   JSONCommand cmd;
   cmd.run(monc, "{\"prefix\": \"config-key ls\"}");
   lock.Unlock();
@@ -336,12 +336,12 @@ std::map<std::string, std::string> Mgr::load_config()
   
   for (auto &key_str : cmd.json_result.get_array()) {
     std::string const key = key_str.get_str();
-    dout(20) << "saw key '" << key << "'" << dendl;
+    dout(20) << "saw key '" << key << "'" << __FFL__ << dendl;
 
     const std::string config_prefix = PyModuleRegistry::config_prefix;
 
     if (key.substr(0, config_prefix.size()) == config_prefix) {
-      dout(20) << "fetching '" << key << "'" << dendl;
+      dout(20) << "fetching '" << key << "'" << __FFL__ << dendl;
       Command get_cmd;
       std::ostringstream cmd_json;
       cmd_json << "{\"prefix\": \"config-key get\", \"key\": \"" << key << "\"}";
@@ -417,11 +417,11 @@ void Mgr::handle_osd_map()
 
           if (metadata_addr != stringify(map_addr)) {
             dout(4) << "OSD[" << osd_id << "] addr change " << metadata_addr
-                    << " != " << stringify(map_addr) << dendl;
+                    << " != " << stringify(map_addr) << __FFL__ << dendl;
             update_meta = true;
           } else {
             dout(20) << "OSD[" << osd_id << "] addr unchanged: "
-                     << metadata_addr << dendl;
+                     << metadata_addr << __FFL__ << dendl;
           }
         } else {
           // Awkward case where daemon went into DaemonState because it
@@ -462,14 +462,14 @@ void Mgr::handle_log(MLog *m)
 
 void Mgr::handle_service_map(MServiceMap *m)
 {
-  dout(10) << "e" << m->service_map.epoch << dendl;
+  dout(10) << "e" << m->service_map.epoch << __FFL__ << dendl;
   cluster_state.set_service_map(m->service_map);
   server.got_service_map();
 }
 
 bool Mgr::ms_dispatch(Message *m)
 {
-  dout(4) << *m << dendl;
+  dout(4) << *m << __FFL__ << dendl;
   Mutex::Locker l(lock);
 
   switch (m->get_type()) {
@@ -557,7 +557,7 @@ void Mgr::handle_fs_map(MFSMap* m)
         update = metadata_addr != stringify(map_addr);
         if (update) {
           dout(4) << "MDS[" << info.name << "] addr change " << metadata_addr
-                  << " != " << stringify(map_addr) << dendl;
+                  << " != " << stringify(map_addr) << __FFL__ << dendl;
         }
       }
     } else {
@@ -586,7 +586,7 @@ void Mgr::handle_fs_map(MFSMap* m)
 bool Mgr::got_mgr_map(const MgrMap& m)
 {
   Mutex::Locker l(lock);
-  dout(10) << m << dendl;
+  dout(10) << m << __FFL__ << dendl;
 
   set<string> old_modules;
   cluster_state.with_mgrmap([&](const MgrMap& m) {
@@ -594,7 +594,7 @@ bool Mgr::got_mgr_map(const MgrMap& m)
     });
   if (m.modules != old_modules) {
     derr << "mgrmap module list changed to (" << m.modules << "), respawn"
-	 << dendl;
+	 << __FFL__ << dendl;
     return true;
   }
 
@@ -605,8 +605,8 @@ bool Mgr::got_mgr_map(const MgrMap& m)
 
 void Mgr::handle_mgr_digest(MMgrDigest* m)
 {
-  dout(10) << m->mon_status_json.length() << dendl;
-  dout(10) << m->health_json.length() << dendl;
+  dout(10) << m->mon_status_json.length() << __FFL__ << dendl;
+  dout(10) << m->health_json.length() << __FFL__ << dendl;
   cluster_state.load_digest(m);
   py_module_registry->notify_all("mon_status", "");
   py_module_registry->notify_all("health", "");
@@ -614,7 +614,7 @@ void Mgr::handle_mgr_digest(MMgrDigest* m)
   // Hack: use this as a tick/opportunity to prompt python-land that
   // the pgmap might have changed since last time we were here.
   py_module_registry->notify_all("pg_summary", "");
-  dout(10) << "done." << dendl;
+  dout(10) << "done." << __FFL__ << dendl;
 
   m->put();
 
@@ -626,7 +626,7 @@ void Mgr::handle_mgr_digest(MMgrDigest* m)
 
 void Mgr::tick()
 {
-  dout(10) << dendl;
+  dout(10) << __FFL__ << dendl;
   server.send_report();
 }
 

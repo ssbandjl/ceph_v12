@@ -65,7 +65,7 @@ ceph_config_get(BaseMgrStandbyModule *self, PyObject *args)
 {
   char *what = nullptr;
   if (!PyArg_ParseTuple(args, "s:ceph_config_get", &what)) {
-    derr << "Invalid args!" << dendl;
+    derr << "Invalid args!" << __FFL__ << dendl;
     return nullptr;
   }
 
@@ -74,10 +74,10 @@ ceph_config_get(BaseMgrStandbyModule *self, PyObject *args)
   bool found = self->this_module->get_config(what, &value);
   PyEval_RestoreThread(tstate); // re-take GIL
   if (found) {
-    dout(10) << "ceph_config_get " << what << " found: " << value.c_str() << dendl;
+    dout(10) << "ceph_config_get " << what << " found: " << value.c_str() << __FFL__ << dendl;
     return PyString_FromString(value.c_str());
   } else {
-    dout(4) << "ceph_config_get " << what << " not found " << dendl;
+    dout(4) << "ceph_config_get " << what << " not found " << __FFL__ << dendl;
     Py_RETURN_NONE;
   }
 }

@@ -83,7 +83,7 @@ void DPDKWorker::initialize()
         cct->_conf->ms_dpdk_hw_flow_control);
     sdev = std::shared_ptr<DPDKDevice>(dev.release());
     sdev->workers.resize(cores);
-    ldout(cct, 1) << __func__ << " using " << cores << " cores " << dendl;
+    ldout(cct, 1) << __func__ << " using " << cores << " cores " << __FFL__ << dendl;
 
     Mutex::Locker l(lock);
     create_stage = WAIT_PORT_FIN_STAGE;
@@ -119,7 +119,7 @@ void DPDKWorker::initialize()
     }
 
     if (sdev->init_port_fini() < 0) {
-      lderr(cct) << __func__ << " init_port_fini failed " << dendl;
+      lderr(cct) << __func__ << " init_port_fini failed " << __FFL__ << dendl;
       ceph_abort();
     }
     Mutex::Locker l(lock);
@@ -188,7 +188,7 @@ DPDKWorker::Impl::Impl(CephContext *cct, unsigned i, EventCenter *c, std::shared
                << cct->_conf->get_val<std::string>("ms_dpdk_host_ipv4_addr") << ", "
                << cct->_conf->get_val<std::string>("ms_dpdk_gateway_ipv4_addr") << ", "
                << cct->_conf->get_val<std::string>("ms_dpdk_netmask_ipv4_addr") << ", "
-               << dendl;
+               << __FFL__ << dendl;
     ceph_abort();
   }
   _inet.set_host_address(ipv4_address(std::get<0>(tuples[0])));
@@ -202,7 +202,7 @@ int DPDKWorker::listen(entity_addr_t &sa, const SocketOptions &opt,
   assert(sa.get_family() == AF_INET);
   assert(sock);
 
-  ldout(cct, 10) << __func__ << " addr " << sa << dendl;
+  ldout(cct, 10) << __func__ << " addr " << sa << __FFL__ << dendl;
   // vector<AvailableIPAddress> tuples;
   // bool parsed = parse_available_address(cct->_conf->ms_dpdk_host_ipv4_addr,
   //                                       cct->_conf->ms_dpdk_gateway_ipv4_addr,
@@ -212,13 +212,13 @@ int DPDKWorker::listen(entity_addr_t &sa, const SocketOptions &opt,
   //              << cct->_conf->ms_dpdk_host_ipv4_addr << ", "
   //              << cct->_conf->ms_dpdk_gateway_ipv4_addr << ", "
   //              << cct->_conf->ms_dpdk_netmask_ipv4_addr << ", "
-  //              << dendl;
+  //              << __FFL__ << dendl;
   //   return -EINVAL;
   // }
   // int idx;
   // parsed = match_available_address(tuples, sa, idx);
   // if (!parsed) {
-  //   lderr(cct) << __func__ << " no matched address for " << sa << dendl;
+  //   lderr(cct) << __func__ << " no matched address for " << sa << __FFL__ << dendl;
   //   return -EINVAL;
   // }
   // _inet.set_host_address(ipv4_address(std::get<0>(tuples[idx])));
@@ -231,7 +231,7 @@ int DPDKWorker::connect(const entity_addr_t &addr, const SocketOptions &opts, Co
 {
   // assert(addr.get_family() == AF_INET);
   int r =  tcpv4_connect(_impl->_inet.get_tcp(), addr, socket);
-  ldout(cct, 10) << __func__ << " addr " << addr << dendl;
+  ldout(cct, 10) << __func__ << " addr " << addr << __FFL__ << dendl;
   return r;
 }
 
@@ -243,7 +243,7 @@ void DPDKStack::spawn_worker(unsigned i, std::function<void ()> &&func)
   int r = 0;
   r = dpdk::eal::init(cct);
   if (r < 0) {
-    lderr(cct) << __func__ << " init dpdk rte failed, r=" << r << dendl;
+    lderr(cct) << __func__ << " init dpdk rte failed, r=" << r << __FFL__ << dendl;
     ceph_abort();
   }
   // if dpdk::eal::init already called by NVMEDevice, we will select 1..n
@@ -252,7 +252,7 @@ void DPDKStack::spawn_worker(unsigned i, std::function<void ()> &&func)
   dpdk::eal::execute_on_master([&]() {
     r = rte_eal_remote_launch(dpdk_thread_adaptor, static_cast<void*>(&funcs[i]), i+1);
     if (r < 0) {
-      lderr(cct) << __func__ << " remote launch failed, r=" << r << dendl;
+      lderr(cct) << __func__ << " remote launch failed, r=" << r << __FFL__ << dendl;
       ceph_abort();
     }
   });

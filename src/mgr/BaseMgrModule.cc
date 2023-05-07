@@ -77,7 +77,7 @@ public:
   {
     assert(python_completion != nullptr);
 
-    dout(10) << "MonCommandCompletion::finish()" << dendl;
+    dout(10) << "MonCommandCompletion::finish()" << __FFL__ << dendl;
     {
       // Scoped so the Gil is released before calling notify_all()
       // Create new thread state because this is called via the MonClient
@@ -226,7 +226,7 @@ ceph_set_health_checks(BaseMgrModule *self, PyObject *args)
     return NULL;
   }
   if (!PyDict_Check(checks)) {
-    derr << __func__ << " arg not a dict" << dendl;
+    derr << __func__ << " arg not a dict" << __FFL__ << dendl;
     Py_RETURN_NONE;
   }
   PyObject *checksls = PyDict_Items(checks);
@@ -237,12 +237,12 @@ ceph_set_health_checks(BaseMgrModule *self, PyObject *args)
     PyObject *check_info = nullptr;
     if (!PyArg_ParseTuple(kv, "sO:pair", &check_name, &check_info)) {
       derr << __func__ << " dict item " << i
-	   << " not a size 2 tuple" << dendl;
+	   << " not a size 2 tuple" << __FFL__ << dendl;
       continue;
     }
     if (!PyDict_Check(check_info)) {
       derr << __func__ << " item " << i << " " << check_name
-	   << " value not a dict" << dendl;
+	   << " value not a dict" << __FFL__ << dendl;
       continue;
     }
     health_status_t severity = HEALTH_OK;
@@ -253,21 +253,21 @@ ceph_set_health_checks(BaseMgrModule *self, PyObject *args)
       PyObject *pair = PyList_GET_ITEM(infols, j);
       if (!PyTuple_Check(pair)) {
 	derr << __func__ << " item " << i << " pair " << j
-	     << " not a tuple" << dendl;
+	     << " not a tuple" << __FFL__ << dendl;
 	continue;
       }
       char *k = nullptr;
       PyObject *v = nullptr;
       if (!PyArg_ParseTuple(pair, "sO:pair", &k, &v)) {
 	derr << __func__ << " item " << i << " pair " << j
-	     << " not a size 2 tuple" << dendl;
+	     << " not a size 2 tuple" << __FFL__ << dendl;
 	continue;
       }
       string ks(k);
       if (ks == "severity") {
 	if (!PyString_Check(v)) {
 	  derr << __func__ << " check " << check_name
-	       << " severity value not string" << dendl;
+	       << " severity value not string" << __FFL__ << dendl;
 	  continue;
 	}
 	string vs(PyString_AsString(v));
@@ -279,28 +279,28 @@ ceph_set_health_checks(BaseMgrModule *self, PyObject *args)
       } else if (ks == "summary") {
 	if (!PyString_Check(v)) {
 	  derr << __func__ << " check " << check_name
-	       << " summary value not string" << dendl;
+	       << " summary value not string" << __FFL__ << dendl;
 	  continue;
 	}
 	summary = PyString_AsString(v);
       } else if (ks == "detail") {
 	if (!PyList_Check(v)) {
 	  derr << __func__ << " check " << check_name
-	       << " detail value not list" << dendl;
+	       << " detail value not list" << __FFL__ << dendl;
 	  continue;
 	}
 	for (int k = 0; k < PyList_Size(v); ++k) {
 	  PyObject *di = PyList_GET_ITEM(v, k);
 	  if (!PyString_Check(di)) {
 	    derr << __func__ << " check " << check_name
-		 << " detail item " << k << " not a string" << dendl;
+		 << " detail item " << k << " not a string" << __FFL__ << dendl;
 	    continue;
 	  }
 	  detail.push_back(PyString_AsString(di));
 	}
       } else {
 	derr << __func__ << " check " << check_name
-	     << " unexpected key " << k << dendl;
+	     << " unexpected key " << k << __FFL__ << dendl;
       }
     }
     auto& d = out_checks.add(check_name, severity, summary);
@@ -312,7 +312,7 @@ ceph_set_health_checks(BaseMgrModule *self, PyObject *args)
           << " health checks:\n";
   out_checks.dump(&jf);
   jf.flush(*_dout);
-  *_dout << dendl;
+  *_dout << __FFL__ << dendl;
 
   PyThreadState *tstate = PyEval_SaveThread();
   self->py_modules->set_health_checks(self->this_module->get_name(),
@@ -361,7 +361,7 @@ ceph_config_get(BaseMgrModule *self, PyObject *args)
 {
   char *what = nullptr;
   if (!PyArg_ParseTuple(args, "s:ceph_config_get", &what)) {
-    derr << "Invalid args!" << dendl;
+    derr << "Invalid args!" << __FFL__ << dendl;
     return nullptr;
   }
 
@@ -373,10 +373,10 @@ ceph_config_get(BaseMgrModule *self, PyObject *args)
   PyEval_RestoreThread(tstate);
 
   if (found) {
-    dout(10) << "ceph_config_get " << what << " found: " << value.c_str() << dendl;
+    dout(10) << "ceph_config_get " << what << " found: " << value.c_str() << __FFL__ << dendl;
     return PyString_FromString(value.c_str());
   } else {
-    dout(4) << "ceph_config_get " << what << " not found " << dendl;
+    dout(4) << "ceph_config_get " << what << " not found " << __FFL__ << dendl;
     Py_RETURN_NONE;
   }
 }
@@ -386,7 +386,7 @@ ceph_config_get_prefix(BaseMgrModule *self, PyObject *args)
 {
   char *prefix = nullptr;
   if (!PyArg_ParseTuple(args, "s:ceph_config_get", &prefix)) {
-    derr << "Invalid args!" << dendl;
+    derr << "Invalid args!" << __FFL__ << dendl;
     return nullptr;
   }
 

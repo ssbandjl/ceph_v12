@@ -32,7 +32,11 @@ dashboard urls: http://182.200.53.73:41984/
   w/ user/pass: admin / 978c009a-1726-45ef-aeac-5be2da32ae56
 
 
-export PATH=./bin:$PATH
+echo -e "$CEPH_BUILD_ROOT vstart.sh:${LINENO}"
+
+src/ceph_mgr.cc
+
+export PATH=/home/xb/project/stor/ceph/ceph/build/bin:$PATH
 运行 rados lspools | grep rgw
 ceph osd pool application enable $POOL rgw
 
@@ -66,7 +70,7 @@ OSD=3 MON=3 RGW=1 ../src/vstart.sh -n -o "rbd_blkin_trace_all=true" \
   -o "rgw_op_tracing = true" \
   -o "rgw_rados_tracing = true" --mgr_num 0
 
-OSD=3 MON=3 RGW=1 ../src/vstart.sh -x -n -o "rbd_blkin_trace_all=true"   -o "osd_tracing = true"   -o "bluestore_tracing = true"   -o "event_tracing = true"   -o "osd_function_tracing = true"   -o "osd_objectstore_tracing = true"   -o "rbd_tracing = true"   -o "rgw_op_tracing = true"   -o "rgw_rados_tracing = true"
+clear;./stop.sh;../src/vstart.sh -X -n -o "rbd_blkin_trace_all=true"   -o "osd_tracing = true"   -o "bluestore_tracing = true"   -o "event_tracing = true"   -o "osd_function_tracing = true"   -o "osd_objectstore_tracing = true"   -o "rbd_tracing = true"   -o "rgw_op_tracing = true"   -o "rgw_rados_tracing = true" --mgr_num 0
 
 ps aux|grep ceph|awk '{print$2}'|xargs -x kill
 ps aux|grep ceph|awk '{print$2}'|xargs -x -I '{}' kill -9 {}
@@ -170,4 +174,24 @@ PID: 1190156 - Name: /home/xb/project/stor/ceph/ceph/build/bin/ceph-osd
 
 
 ../src/vstart.sh -help
+
+src/tools/ceph_conf.cc
+
+
+restart
+./stop.sh;clear;sh -x ../src/vstart.sh -d -n -o "osd_tracing = true"
+
+replace in dir
+<< dendl;
+<< __FFL__ << dendl;
+
+std::string build_time = "2023/04/27 10:10:10";
+priv_ss << "set uid:gid to " << uid << ":" << gid << " (" << uid_string << ":" << gid_string << ")" << "build_time:" << build_time;
+
+tee .gitignore <<EOF
+install-deps-python2.7_tmp
+install-deps-python3_tmp
+install-deps-python3_tmp_bak
+<<EOF
+
 

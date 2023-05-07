@@ -36,7 +36,7 @@ int RDMAServerSocketImpl::listen(entity_addr_t &sa, const SocketOptions &opt)
   if (server_setup_socket < 0) {
     rc = -errno;
     lderr(cct) << __func__ << " failed to create server socket: "
-               << cpp_strerror(errno) << dendl;
+               << cpp_strerror(errno) << __FFL__ << dendl;
     return rc;
   }
 
@@ -54,18 +54,18 @@ int RDMAServerSocketImpl::listen(entity_addr_t &sa, const SocketOptions &opt)
   if (rc < 0) {
     rc = -errno;
     ldout(cct, 10) << __func__ << " unable to bind to " << sa.get_sockaddr()
-                   << " on port " << sa.get_port() << ": " << cpp_strerror(errno) << dendl;
+                   << " on port " << sa.get_port() << ": " << cpp_strerror(errno) << __FFL__ << dendl;
     goto err;
   }
 
   rc = ::listen(server_setup_socket, cct->_conf->ms_tcp_listen_backlog);
   if (rc < 0) {
     rc = -errno;
-    lderr(cct) << __func__ << " unable to listen on " << sa << ": " << cpp_strerror(errno) << dendl;
+    lderr(cct) << __func__ << " unable to listen on " << sa << ": " << cpp_strerror(errno) << __FFL__ << dendl;
     goto err;
   }
 
-  ldout(cct, 20) << __func__ << " bind to " << sa.get_sockaddr() << " on port " << sa.get_port()  << dendl;
+  ldout(cct, 20) << __func__ << " bind to " << sa.get_sockaddr() << " on port " << sa.get_port()  << __FFL__ << dendl;
   return 0;
 
 err:
@@ -76,7 +76,7 @@ err:
 
 int RDMAServerSocketImpl::accept(ConnectedSocket *sock, const SocketOptions &opt, entity_addr_t *out, Worker *w)
 {
-  ldout(cct, 15) << __func__ << dendl;
+  ldout(cct, 15) << __func__ << __FFL__ << dendl;
 
   assert(sock);
   sockaddr_storage ss;
@@ -107,7 +107,7 @@ int RDMAServerSocketImpl::accept(ConnectedSocket *sock, const SocketOptions &opt
   //Worker* w = dispatcher->get_stack()->get_worker();
   server = new RDMAConnectedSocketImpl(cct, infiniband, dispatcher, dynamic_cast<RDMAWorker*>(w));
   server->set_accept_fd(sd);
-  ldout(cct, 20) << __func__ << " accepted a new QP, tcp_fd: " << sd << dendl;
+  ldout(cct, 20) << __func__ << " accepted a new QP, tcp_fd: " << sd << __FFL__ << dendl;
   std::unique_ptr<RDMAConnectedSocketImpl> csi(server);
   *sock = ConnectedSocket(std::move(csi));
 

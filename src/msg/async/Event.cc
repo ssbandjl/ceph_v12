@@ -49,7 +49,7 @@ class C_handle_notify : public EventCallback {
       r = read(fd_or_id, c, sizeof(c));
       if (r < 0) {
         if (errno != EAGAIN)
-          ldout(cct, 1) << __func__ << " read notify pipe failed: " << cpp_strerror(errno) << dendl;
+          ldout(cct, 1) << __func__ << " read notify pipe failed: " << cpp_strerror(errno) << __FFL__ << dendl;
       }
     } while (r > 0);
   }
@@ -125,13 +125,13 @@ int EventCenter::init(int n, unsigned i, const std::string &t)
   }
 
   if (!driver) {
-    lderr(cct) << __func__ << " failed to create event driver " << dendl;
+    lderr(cct) << __func__ << " failed to create event driver " << __FFL__ << dendl;
     return -1;
   }
 
   int r = driver->init(this, n);
   if (r < 0) {
-    lderr(cct) << __func__ << " failed to init event driver." << dendl;
+    lderr(cct) << __func__ << " failed to init event driver." << __FFL__ << dendl;
     return r;
   }
 
@@ -144,7 +144,7 @@ int EventCenter::init(int n, unsigned i, const std::string &t)
   int fds[2];
   if (pipe_cloexec(fds) < 0) {
     int e = errno;
-    lderr(cct) << __func__ << " can't create notify pipe: " << cpp_strerror(e) << dendl;
+    lderr(cct) << __func__ << " can't create notify pipe: " << cpp_strerror(e) << __FFL__ << dendl;
     return -e;
   }
 
@@ -189,7 +189,7 @@ EventCenter::~EventCenter()
 void EventCenter::set_owner()
 {
   owner = pthread_self();
-  ldout(cct, 2) << __func__ << " idx=" << idx << " owner=" << owner << dendl;
+  ldout(cct, 2) << __func__ << " idx=" << idx << " owner=" << owner << __FFL__ << dendl;
   if (!global_centers) {
     cct->lookup_or_create_singleton_object<EventCenter::AssociatedCenters>(
         global_centers, "AsyncMessenger::EventCenter::global_center::"+type);
@@ -211,10 +211,10 @@ int EventCenter::create_file_event(int fd, int mask, EventCallbackRef ctxt)
     int new_size = nevent << 2;
     while (fd >= new_size)
       new_size <<= 2;
-    ldout(cct, 20) << __func__ << " event count exceed " << nevent << ", expand to " << new_size << dendl;
+    ldout(cct, 20) << __func__ << " event count exceed " << nevent << ", expand to " << new_size << __FFL__ << dendl;
     r = driver->resize_events(new_size);
     if (r < 0) {
-      lderr(cct) << __func__ << " event count is exceed." << dendl;
+      lderr(cct) << __func__ << " event count is exceed." << __FFL__ << dendl;
       return -ERANGE;
     }
     file_events.resize(new_size);
@@ -223,7 +223,7 @@ int EventCenter::create_file_event(int fd, int mask, EventCallbackRef ctxt)
 
   EventCenter::FileEvent *event = _get_file_event(fd);
   ldout(cct, 20) << __func__ << " create event started fd=" << fd << " mask=" << mask
-                 << " original mask is " << event->mask << dendl;
+                 << " original mask is " << event->mask << __FFL__ << dendl;
   if (event->mask == mask)
     return 0;
 
@@ -244,7 +244,7 @@ int EventCenter::create_file_event(int fd, int mask, EventCallbackRef ctxt)
     event->write_cb = ctxt;
   }
   ldout(cct, 20) << __func__ << " create event end fd=" << fd << " mask=" << mask
-                 << " original mask is " << event->mask << dendl;
+                 << " original mask is " << event->mask << __FFL__ << dendl;
   return 0;
 }
 
@@ -253,12 +253,12 @@ void EventCenter::delete_file_event(int fd, int mask)
   assert(in_thread() && fd >= 0);
   if (fd >= nevent) {
     ldout(cct, 1) << __func__ << " delete event fd=" << fd << " is equal or greater than nevent=" << nevent
-                  << "mask=" << mask << dendl;
+                  << "mask=" << mask << __FFL__ << dendl;
     return ;
   }
   EventCenter::FileEvent *event = _get_file_event(fd);
   ldout(cct, 30) << __func__ << " delete event started fd=" << fd << " mask=" << mask
-                 << " original mask is " << event->mask << dendl;
+                 << " original mask is " << event->mask << __FFL__ << dendl;
   if (!event->mask)
     return ;
 
@@ -277,7 +277,7 @@ void EventCenter::delete_file_event(int fd, int mask)
 
   event->mask = event->mask & (~mask);
   ldout(cct, 30) << __func__ << " delete event end fd=" << fd << " mask=" << mask
-                 << " original mask is " << event->mask << dendl;
+                 << " original mask is " << event->mask << __FFL__ << dendl;
 }
 
 uint64_t EventCenter::create_time_event(uint64_t microseconds, EventCallbackRef ctxt)
@@ -285,7 +285,7 @@ uint64_t EventCenter::create_time_event(uint64_t microseconds, EventCallbackRef 
   assert(in_thread());
   uint64_t id = time_event_next_id++;
 
-  ldout(cct, 30) << __func__ << " id=" << id << " trigger after " << microseconds << "us"<< dendl;
+  ldout(cct, 30) << __func__ << " id=" << id << " trigger after " << microseconds << "us"<< __FFL__ << dendl;
   EventCenter::TimeEvent event;
   clock_type::time_point expire = clock_type::now() + std::chrono::microseconds(microseconds);
   event.id = id;
@@ -300,13 +300,13 @@ uint64_t EventCenter::create_time_event(uint64_t microseconds, EventCallbackRef 
 void EventCenter::delete_time_event(uint64_t id)
 {
   assert(in_thread());
-  ldout(cct, 30) << __func__ << " id=" << id << dendl;
+  ldout(cct, 30) << __func__ << " id=" << id << __FFL__ << dendl;
   if (id >= time_event_next_id || id == 0)
     return ;
 
   auto it = event_map.find(id);
   if (it == event_map.end()) {
-    ldout(cct, 10) << __func__ << " id=" << id << " not found" << dendl;
+    ldout(cct, 10) << __func__ << " id=" << id << " not found" << __FFL__ << dendl;
     return ;
   }
 
@@ -320,13 +320,13 @@ void EventCenter::wakeup()
   if (!pollers.empty() || !driver->need_wakeup())
     return ;
 
-  ldout(cct, 20) << __func__ << dendl;
+  ldout(cct, 20) << __func__ << __FFL__ << dendl;
   char buf = 'c';
   // wake up "event_wait"
   int n = write(notify_send_fd, &buf, sizeof(buf));
   if (n < 0) {
     if (errno != EAGAIN) {
-      ldout(cct, 1) << __func__ << " write notify pipe failed: " << cpp_strerror(errno) << dendl;
+      ldout(cct, 1) << __func__ << " write notify pipe failed: " << cpp_strerror(errno) << __FFL__ << dendl;
       ceph_abort();
     }
   }
@@ -336,7 +336,7 @@ int EventCenter::process_time_events()
 {
   int processed = 0;
   clock_type::time_point now = clock_type::now();
-  ldout(cct, 30) << __func__ << " cur time is " << now << dendl;
+  ldout(cct, 30) << __func__ << " cur time is " << now << __FFL__ << dendl;
 
   while (!time_events.empty()) {
     auto it = time_events.begin();
@@ -346,7 +346,7 @@ int EventCenter::process_time_events()
       uint64_t id = e.id;
       time_events.erase(it);
       event_map.erase(id);
-      ldout(cct, 30) << __func__ << " process time event: id=" << id << dendl;
+      ldout(cct, 30) << __func__ << " process time event: id=" << id << __FFL__ << dendl;
       processed++;
       cb->do_request(id);
     } else {
@@ -377,7 +377,7 @@ int EventCenter::process_events(int timeout_microseconds,  ceph::timespan *worki
     shortest = now + std::chrono::microseconds(timeout_microseconds); 
 
     if (it != time_events.end() && shortest >= it->first) {
-      ldout(cct, 30) << __func__ << " shortest is " << shortest << " it->first is " << it->first << dendl;
+      ldout(cct, 30) << __func__ << " shortest is " << shortest << " it->first is " << it->first << __FFL__ << dendl;
       shortest = it->first;
       trigger_time = true;
       if (shortest > now) {
@@ -392,7 +392,7 @@ int EventCenter::process_events(int timeout_microseconds,  ceph::timespan *worki
     tv.tv_usec = timeout_microseconds % 1000000;
   }
 
-  ldout(cct, 30) << __func__ << " wait second " << tv.tv_sec << " usec " << tv.tv_usec << dendl;
+  ldout(cct, 30) << __func__ << " wait second " << tv.tv_sec << " usec " << tv.tv_usec << __FFL__ << dendl;
   vector<FiredFileEvent> fired_events;
   numevents = driver->event_wait(fired_events, &tv);
   auto working_start = ceph::mono_clock::now();
@@ -418,7 +418,7 @@ int EventCenter::process_events(int timeout_microseconds,  ceph::timespan *worki
       }
     }
 
-    ldout(cct, 30) << __func__ << " event_wq process is " << fired_events[j].fd << " mask is " << fired_events[j].mask << dendl;
+    ldout(cct, 30) << __func__ << " event_wq process is " << fired_events[j].fd << " mask is " << fired_events[j].mask << __FFL__ << dendl;
   }
 
   if (trigger_time)
@@ -432,7 +432,7 @@ int EventCenter::process_events(int timeout_microseconds,  ceph::timespan *worki
     external_lock.unlock();
     while (!cur_process.empty()) {
       EventCallbackRef e = cur_process.front();
-      ldout(cct, 30) << __func__ << " do " << e << dendl;
+      ldout(cct, 30) << __func__ << " do " << e << __FFL__ << dendl;
       e->do_request(0);
       cur_process.pop_front();
       numevents++;
@@ -459,5 +459,5 @@ void EventCenter::dispatch_event_external(EventCallbackRef e)
   if (!in_thread() && wake)
     wakeup();
 
-  ldout(cct, 30) << __func__ << " " << e << " pending " << num << dendl;
+  ldout(cct, 30) << __func__ << " " << e << " pending " << num << __FFL__ << dendl;
 }

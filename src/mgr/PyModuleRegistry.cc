@@ -44,7 +44,7 @@ namespace {
       if (len && m[len-1] == '\n') {
 	m[len-1] = '\0';
       }
-      dout(4) << m << dendl;
+      dout(4) << m << __FFL__ << dendl;
     }
     Py_RETURN_NONE;
   }
@@ -109,11 +109,11 @@ std::string PyModule::get_site_packages()
     auto sys_path = PyObject_GetAttrString(sys_module, "path");
     assert(sys_path);
 
-    dout(1) << "sys.path:" << dendl;
+    dout(1) << "sys.path:" << __FFL__ << dendl;
     auto n = PyList_Size(sys_path);
     bool first = true;
     for (Py_ssize_t i = 0; i < n; ++i) {
-      dout(1) << "  " << PyString_AsString(PyList_GetItem(sys_path, i)) << dendl;
+      dout(1) << "  " << PyString_AsString(PyList_GetItem(sys_path, i)) << __FFL__ << dendl;
       if (first) {
         first = false;
       } else {
@@ -162,14 +162,14 @@ int PyModuleRegistry::init(const MgrMap &map)
 
   // Load python code
   for (const auto& module_name : mgr_map.modules) {
-    dout(1) << "Loading python module '" << module_name << "'" << dendl;
+    dout(1) << "Loading python module '" << module_name << "'" << __FFL__ << dendl;
     auto mod = ceph::make_unique<PyModule>(module_name);
     int r = mod->load(pMainThreadState);
     if (r != 0) {
       // Don't use handle_pyerror() here; we don't have the GIL
       // or the right thread state (this is deliberate).
       derr << "Error loading module '" << module_name << "': "
-        << cpp_strerror(r) << dendl;
+        << cpp_strerror(r) << __FFL__ << dendl;
       failed_modules.push_back(module_name);
       // Don't drop out here, load the other modules
     } else {
@@ -198,7 +198,7 @@ int PyModule::load(PyThreadState *pMainThreadState)
 
     auto thread_state = Py_NewInterpreter();
     if (thread_state == nullptr) {
-      derr << "Failed to create python sub-interpreter for '" << module_name << '"' << dendl;
+      derr << "Failed to create python sub-interpreter for '" << module_name << '"' << __FFL__ << dendl;
       return -EINVAL;
     } else {
       pMyThreadState.set(thread_state);
@@ -221,7 +221,7 @@ int PyModule::load(PyThreadState *pMainThreadState)
       // Configure sys.path to include mgr_module_path
       std::string sys_path = std::string(Py_GetPath()) + ":" + get_site_packages()
                              + ":" + g_conf->get_val<std::string>("mgr_module_path");
-      dout(10) << "Computed sys.path '" << sys_path << "'" << dendl;
+      dout(10) << "Computed sys.path '" << sys_path << "'" << __FFL__ << dendl;
 
       PySys_SetPath(const_cast<char*>(sys_path.c_str()));
     }
@@ -261,8 +261,8 @@ int PyModule::load(PyThreadState *pMainThreadState)
     auto pModule = PyImport_Import(pName);
     Py_DECREF(pName);
     if (pModule == nullptr) {
-      derr << "Module not found: '" << module_name << "'" << dendl;
-      derr << handle_pyerror() << dendl;
+      derr << "Module not found: '" << module_name << "'" << __FFL__ << dendl;
+      derr << handle_pyerror() << __FFL__ << dendl;
       return -ENOENT;
     }
 
@@ -270,8 +270,8 @@ int PyModule::load(PyThreadState *pMainThreadState)
     // TODO: let them call it what they want instead of just 'Module'
     pClass = PyObject_GetAttrString(pModule, (const char*)"Module");
     if (pClass == nullptr) {
-      derr << "Class not found in module '" << module_name << "'" << dendl;
-      derr << handle_pyerror() << dendl;
+      derr << "Class not found in module '" << module_name << "'" << __FFL__ << dendl;
+      derr << handle_pyerror() << __FFL__ << dendl;
       return -EINVAL;
     }
 
@@ -279,10 +279,10 @@ int PyModule::load(PyThreadState *pMainThreadState)
                                            (const char*)"StandbyModule");
     if (pStandbyClass) {
       dout(4) << "Standby mode available in module '" << module_name
-              << "'" << dendl;
+              << "'" << __FFL__ << dendl;
     } else {
       dout(4) << "Standby mode not provided by module '" << module_name
-              << "'" << dendl;
+              << "'" << __FFL__ << dendl;
       PyErr_Clear();
     }
 
@@ -308,26 +308,26 @@ void PyModuleRegistry::standby_start(MonClient *monc)
   assert(standby_modules == nullptr);
   assert(is_initialized());
 
-  dout(4) << "Starting modules in standby mode" << dendl;
+  dout(4) << "Starting modules in standby mode" << __FFL__ << dendl;
 
   standby_modules.reset(new StandbyPyModules(monc, mgr_map, clog));
 
   std::set<std::string> failed_modules;
   for (const auto &i : modules) {
     if (i.second->pStandbyClass) {
-      dout(4) << "starting module " << i.second->get_name() << dendl;
+      dout(4) << "starting module " << i.second->get_name() << __FFL__ << dendl;
       int r = standby_modules->start_one(i.first,
               i.second->pStandbyClass,
               i.second->pMyThreadState);
       if (r != 0) {
         derr << "failed to start module '" << i.second->get_name()
-             << "'" << dendl;;
+             << "'" << __FFL__ << dendl;;
         failed_modules.insert(i.second->get_name());
         // Continue trying to load any other modules
       }
     } else {
       dout(4) << "skipping module '" << i.second->get_name() << "' because "
-                 "it does not implement a standby mode" << dendl;
+                 "it does not implement a standby mode" << __FFL__ << dendl;
     }
   }
 
@@ -346,7 +346,7 @@ void PyModuleRegistry::active_start(
 {
   Mutex::Locker locker(lock);
 
-  dout(4) << "Starting modules in active mode" << dendl;
+  dout(4) << "Starting modules in active mode" << __FFL__ << dendl;
 
   assert(active_modules == nullptr);
   assert(is_initialized());
@@ -360,13 +360,13 @@ void PyModuleRegistry::active_start(
               config_, ds, cs, mc, clog_, objecter_, client_, f));
 
   for (const auto &i : modules) {
-    dout(4) << "Starting " << i.first << dendl;
+    dout(4) << "Starting " << i.first << __FFL__ << dendl;
     int r = active_modules->start_one(i.first,
             i.second->pClass,
             i.second->pMyThreadState);
     if (r != 0) {
       derr << "Failed to run module in active mode ('" << i.first << "')"
-           << dendl;
+           << __FFL__ << dendl;
     }
   }
 }

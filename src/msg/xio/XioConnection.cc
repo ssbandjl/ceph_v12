@@ -112,7 +112,7 @@ XioConnection::XioConnection(XioMessenger *m, XioConnection::type _type,
 
   if (policy.throttler_messages) {
     max_msgs = policy.throttler_messages->get_max();
-    ldout(m->cct,4) << "XioMessenger throttle_msgs: " << max_msgs << dendl;
+    ldout(m->cct,4) << "XioMessenger throttle_msgs: " << max_msgs << __FFL__ << dendl;
   }
 
   xopt = m->cct->_conf->xio_queue_depth;
@@ -131,7 +131,7 @@ XioConnection::XioConnection(XioMessenger *m, XioConnection::type _type,
 
   if (policy.throttler_bytes) {
     max_bytes = policy.throttler_bytes->get_max();
-    ldout(m->cct,4) << "XioMessenger throttle_bytes: " << max_bytes << dendl;
+    ldout(m->cct,4) << "XioMessenger throttle_bytes: " << max_bytes << __FFL__ << dendl;
   }
 
   bytes_opt = (2 << 28); /* default: 512 MB */
@@ -144,7 +144,7 @@ XioConnection::XioConnection(XioMessenger *m, XioConnection::type _type,
   xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_RCV_QUEUE_DEPTH_BYTES,
              &bytes_opt, sizeof(bytes_opt));
 
-  ldout(m->cct,4) << "throttle_msgs: " << xopt << " throttle_bytes: " << bytes_opt << dendl;
+  ldout(m->cct,4) << "throttle_msgs: " << xopt << " throttle_bytes: " << bytes_opt << __FFL__ << dendl;
 
   /* XXXX fake features, aieee! */
   set_features(XIO_ALL_FEATURES);
@@ -210,7 +210,7 @@ void XioConnection::send_keepalive_or_ack_internal(bool ack, const utime_t *tp)
   msg->out.header.iov_len = pb->length();
 
   ldout(msgr->cct,8) << __func__ << " sending command with tag " << (int)(*(char*)msg->out.header.iov_base)
-       << " len " << msg->out.header.iov_len << dendl;
+       << " len " << msg->out.header.iov_len << __FFL__ << dendl;
 
   portal->enqueue(this, xcmd);
 }
@@ -275,7 +275,7 @@ int XioConnection::handle_data_msg(struct xio_session *session,
 
   if (! in_seq.p()) {
     if (!tmsg->in.header.iov_len) {
-	ldout(msgr->cct,0) << __func__ << " empty header: packet out of sequence?" << dendl;
+	ldout(msgr->cct,0) << __func__ << " empty header: packet out of sequence?" << __FFL__ << dendl;
 	xio_release_msg(msg);
 	return 0;
     }
@@ -288,7 +288,7 @@ int XioConnection::handle_data_msg(struct xio_session *session,
       << " iov_base " << tmsg->in.header.iov_base
       << " iov_len " << (int) tmsg->in.header.iov_len
       << " nents " << tmsg->in.pdata_iov.nents
-      << " sn " << tmsg->sn << dendl;
+      << " sn " << tmsg->sn << __FFL__ << dendl;
     assert(session == this->session);
     in_seq.set_count(msg_cnt.msg_cnt);
   } else {
@@ -371,7 +371,7 @@ int XioConnection::handle_data_msg(struct xio_session *session,
     if (hdr.hdr->type == 43) {
       ldout(msgr->cct,4) << "front (payload) dump:";
       payload.hexdump( *_dout );
-      *_dout << dendl;
+      *_dout << __FFL__ << dendl;
     }
   }
 
@@ -474,14 +474,14 @@ int XioConnection::handle_data_msg(struct xio_session *session,
     }
 
     if (magic & (MSG_MAGIC_TRACE_XCON)) {
-      ldout(msgr->cct,4) << "decode m is " << m->get_type() << dendl;
+      ldout(msgr->cct,4) << "decode m is " << m->get_type() << __FFL__ << dendl;
     }
 
     /* dispatch it */
     msgr->ds_dispatch(m);
   } else {
     /* responds for undecoded messages and frees hook */
-    ldout(msgr->cct,4) << "decode m failed" << dendl;
+    ldout(msgr->cct,4) << "decode m failed" << __FFL__ << dendl;
     m_hook->on_err_finalize(this);
   }
 
@@ -498,30 +498,30 @@ int XioConnection::on_msg(struct xio_session *session,
     tag = *(char*)msg->in.header.iov_base;
 
   ldout(msgr->cct,8) << __func__ << " receive msg with iov_len "
-    << (int) msg->in.header.iov_len << " tag " << (int)tag << dendl;
+    << (int) msg->in.header.iov_len << " tag " << (int)tag << __FFL__ << dendl;
 
   //header_len_without_tag is only meaningful in case we have tag
   size_t header_len_without_tag = msg->in.header.iov_len - sizeof(tag);
 
   switch(tag) {
   case CEPH_MSGR_TAG_MSG:
-    ldout(msgr->cct, 20) << __func__ << " got data message" << dendl;
+    ldout(msgr->cct, 20) << __func__ << " got data message" << __FFL__ << dendl;
     return handle_data_msg(session, msg, more_in_batch, cb_user_context);
 
   case CEPH_MSGR_TAG_KEEPALIVE:
-    ldout(msgr->cct, 20) << __func__ << " got KEEPALIVE" << dendl;
+    ldout(msgr->cct, 20) << __func__ << " got KEEPALIVE" << __FFL__ << dendl;
     set_last_keepalive(ceph_clock_now());
     break;
 
   case CEPH_MSGR_TAG_KEEPALIVE2:
     if (header_len_without_tag < sizeof(ceph_timespec)) {
       lderr(msgr->cct) << __func__ << " too few data for KEEPALIVE2: got " << header_len_without_tag <<
-         " bytes instead of " << sizeof(ceph_timespec) << " bytes" << dendl;
+         " bytes instead of " << sizeof(ceph_timespec) << " bytes" << __FFL__ << dendl;
     }
     else {
       ceph_timespec *t = (ceph_timespec *) ((char*)msg->in.header.iov_base + sizeof(tag));
       utime_t kp_t = utime_t(*t);
-      ldout(msgr->cct, 20) << __func__ << " got KEEPALIVE2 with timestamp" << kp_t << dendl;
+      ldout(msgr->cct, 20) << __func__ << " got KEEPALIVE2 with timestamp" << kp_t << __FFL__ << dendl;
       send_keepalive_or_ack(true, &kp_t);
       set_last_keepalive(ceph_clock_now());
     }
@@ -531,18 +531,18 @@ int XioConnection::on_msg(struct xio_session *session,
   case CEPH_MSGR_TAG_KEEPALIVE2_ACK:
     if (header_len_without_tag < sizeof(ceph_timespec)) {
       lderr(msgr->cct) << __func__ << " too few data for KEEPALIVE2_ACK: got " << header_len_without_tag <<
-         " bytes instead of " << sizeof(ceph_timespec) << " bytes" << dendl;
+         " bytes instead of " << sizeof(ceph_timespec) << " bytes" << __FFL__ << dendl;
     }
     else {
       ceph_timespec *t = (ceph_timespec *) ((char*)msg->in.header.iov_base + sizeof(tag));
       utime_t kp_t(*t);
-      ldout(msgr->cct, 20) << __func__ << " got KEEPALIVE2_ACK with timestamp" << kp_t << dendl;
+      ldout(msgr->cct, 20) << __func__ << " got KEEPALIVE2_ACK with timestamp" << kp_t << __FFL__ << dendl;
       set_last_keepalive_ack(kp_t);
     }
     break;
 
   default:
-    lderr(msgr->cct) << __func__ << " unsupported message tag " << (int) tag << dendl;
+    lderr(msgr->cct) << __func__ << " unsupported message tag " << (int) tag << __FFL__ << dendl;
     assert(! "unsupported message tag");
   }
 
@@ -566,13 +566,13 @@ int XioConnection::on_ow_msg_send_complete(struct xio_session *session,
   } /* trace ctr */
 
   ldout(msgr->cct,11) << "on_msg_delivered xcon: " << xsend->xcon <<
-    " msg: " << req << " sn: " << req->sn << dendl;
+    " msg: " << req << " sn: " << req->sn << __FFL__ << dendl;
 
   XioMsg *xmsg = dynamic_cast<XioMsg*>(xsend);
   if (xmsg) {
     ldout(msgr->cct,11) << "on_msg_delivered xcon: " <<
       " type: " << xmsg->m->get_type() << " tid: " << xmsg->m->get_tid() <<
-      " seq: " << xmsg->m->get_seq() << dendl;
+      " seq: " << xmsg->m->get_seq() << __FFL__ << dendl;
   }
 
   --send_ctr; /* atomic, because portal thread */
@@ -584,7 +584,7 @@ int XioConnection::on_ow_msg_send_complete(struct xio_session *session,
 	(1 /* XXX memory <= memory low-water mark */))  {
       cstate.state_up_ready(XioConnection::CState::OP_FLAG_NONE);
       ldout(msgr->cct,2) << "on_msg_delivered xcon: " << xsend->xcon
-        << " up_ready from flow_controlled" << dendl;
+        << " up_ready from flow_controlled" << __FFL__ << dendl;
     }
   }
 
@@ -597,7 +597,7 @@ void XioConnection::msg_send_fail(XioSend *xsend, int code)
 {
   ldout(msgr->cct,2) << "xio_send_msg FAILED xcon: " << this <<
     " msg: " << xsend->get_xio_msg() << " code=" << code <<
-    " (" << xio_strerror(code) << ")" << dendl;
+    " (" << xio_strerror(code) << ")" << __FFL__ << dendl;
   /* return refs taken for each xio_msg */
   xsend->put_msg_refs();
 } /* msg_send_fail */
@@ -606,7 +606,7 @@ void XioConnection::msg_release_fail(struct xio_msg *msg, int code)
 {
   ldout(msgr->cct,2) << "xio_release_msg FAILED xcon: " << this <<
     " msg: " << msg <<  "code=" << code <<
-    " (" << xio_strerror(code) << ")" << dendl;
+    " (" << xio_strerror(code) << ")" << __FFL__ << dendl;
 } /* msg_release_fail */
 
 int XioConnection::flush_out_queues(uint32_t flags) {
@@ -689,7 +689,7 @@ int XioConnection::discard_out_queues(uint32_t flags)
 	portal->release_xio_msg(static_cast<XioCompletion*>(xs));
 	break;
       default:
-	ldout(msgr->cct,0) << __func__ << ": Unknown Msg type " << xs->type << dendl;
+	ldout(msgr->cct,0) << __func__ << ": Unknown Msg type " << xs->type << __FFL__ << dendl;
 	break;
     }
   }

@@ -65,7 +65,7 @@ int Processor::bind(const entity_addr_t &bind_addr,
 {
   const md_config_t *conf = msgr->cct->_conf;
   // bind to a socket
-  ldout(msgr->cct, 10) << __func__ << dendl;
+  ldout(msgr->cct, 10) << __func__ << __FFL__ << dendl;
 
   int family;
   switch (bind_addr.get_family()) {
@@ -96,7 +96,7 @@ int Processor::bind(const entity_addr_t &bind_addr,
   for (int i = 0; i < conf->ms_bind_retry_count; i++) {
     if (i > 0) {
       lderr(msgr->cct) << __func__ << " was unable to bind. Trying again in "
-                       << conf->ms_bind_retry_delay << " seconds " << dendl;
+                       << conf->ms_bind_retry_delay << " seconds " << __FFL__ << dendl;
       sleep(conf->ms_bind_retry_delay);
     }
 
@@ -106,7 +106,7 @@ int Processor::bind(const entity_addr_t &bind_addr,
       }, false);
       if (r < 0) {
         lderr(msgr->cct) << __func__ << " unable to bind to " << listen_addr
-                         << ": " << cpp_strerror(r) << dendl;
+                         << ": " << cpp_strerror(r) << __FFL__ << dendl;
         continue;
       }
     } else {
@@ -126,11 +126,11 @@ int Processor::bind(const entity_addr_t &bind_addr,
         lderr(msgr->cct) << __func__ << " unable to bind to " << listen_addr
                          << " on any port in range " << msgr->cct->_conf->ms_bind_port_min
                          << "-" << msgr->cct->_conf->ms_bind_port_max << ": "
-                         << cpp_strerror(r) << dendl;
+                         << cpp_strerror(r) << __FFL__ << dendl;
         listen_addr.set_port(0); // Clear port before retry, otherwise we shall fail again.
         continue;
       }
-      ldout(msgr->cct, 10) << __func__ << " bound on random port " << listen_addr << dendl;
+      ldout(msgr->cct, 10) << __func__ << " bound on random port " << listen_addr << __FFL__ << dendl;
     }
     if (r == 0)
       break;
@@ -138,18 +138,18 @@ int Processor::bind(const entity_addr_t &bind_addr,
   // It seems that binding completely failed, return with that exit status
   if (r < 0) {
     lderr(msgr->cct) << __func__ << " was unable to bind after " << conf->ms_bind_retry_count
-                     << " attempts: " << cpp_strerror(r) << dendl;
+                     << " attempts: " << cpp_strerror(r) << __FFL__ << dendl;
     return r;
   }
 
-  ldout(msgr->cct, 10) << __func__ << " bound to " << listen_addr << dendl;
+  ldout(msgr->cct, 10) << __func__ << " bound to " << listen_addr << __FFL__ << dendl;
   *bound_addr = listen_addr;
   return 0;
 }
 
 void Processor::start()
 {
-  ldout(msgr->cct, 1) << __func__ << dendl;
+  ldout(msgr->cct, 1) << __func__ << __FFL__ << dendl;
 
   // start thread
   if (listen_socket) {
@@ -160,7 +160,7 @@ void Processor::start()
 
 void Processor::accept()
 {
-  ldout(msgr->cct, 10) << __func__ << " listen_fd=" << listen_socket.fd() << dendl;
+  ldout(msgr->cct, 10) << __func__ << " listen_fd=" << listen_socket.fd() << __FFL__ << dendl;
   SocketOptions opts;
   opts.nodelay = msgr->cct->_conf->ms_tcp_nodelay;
   opts.rcbuf_size = msgr->cct->_conf->ms_tcp_rcvbuf;
@@ -175,7 +175,7 @@ void Processor::accept()
       w = msgr->get_stack()->get_worker();
     int r = listen_socket.accept(&cli_socket, opts, &addr, w);
     if (r == 0) {
-      ldout(msgr->cct, 10) << __func__ << " accepted incoming on sd " << cli_socket.fd() << dendl;
+      ldout(msgr->cct, 10) << __func__ << " accepted incoming on sd " << cli_socket.fd() << __FFL__ << dendl;
 
       msgr->add_accept(w, std::move(cli_socket), addr);
       continue;
@@ -186,21 +186,21 @@ void Processor::accept()
         break;
       } else if (r == -EMFILE || r == -ENFILE) {
         lderr(msgr->cct) << __func__ << " open file descriptions limit reached sd = " << listen_socket.fd()
-                         << " errno " << r << " " << cpp_strerror(r) << dendl;
+                         << " errno " << r << " " << cpp_strerror(r) << __FFL__ << dendl;
 	if (++accept_error_num > msgr->cct->_conf->ms_max_accept_failures) {
-	  lderr(msgr->cct) << "Proccessor accept has encountered enough error numbers, just do ceph_abort()." << dendl;
+	  lderr(msgr->cct) << "Proccessor accept has encountered enough error numbers, just do ceph_abort()." << __FFL__ << dendl;
 	  ceph_abort();
 	}
 	continue;
       } else if (r == -ECONNABORTED) {
         ldout(msgr->cct, 0) << __func__ << " it was closed because of rst arrived sd = " << listen_socket.fd()
-                            << " errno " << r << " " << cpp_strerror(r) << dendl;
+                            << " errno " << r << " " << cpp_strerror(r) << __FFL__ << dendl;
         continue;
       } else {
         lderr(msgr->cct) << __func__ << " no incoming connection?"
-                         << " errno " << r << " " << cpp_strerror(r) << dendl;
+                         << " errno " << r << " " << cpp_strerror(r) << __FFL__ << dendl;
 	if (++accept_error_num > msgr->cct->_conf->ms_max_accept_failures) {
-	   lderr(msgr->cct) << "Proccessor accept has encountered enough error numbers, just do ceph_abort()." << dendl;
+	   lderr(msgr->cct) << "Proccessor accept has encountered enough error numbers, just do ceph_abort()." << __FFL__ << dendl;
 	   ceph_abort();
 	}
 	continue;
@@ -211,7 +211,7 @@ void Processor::accept()
 
 void Processor::stop()
 {
-  ldout(msgr->cct,10) << __func__ << dendl;
+  ldout(msgr->cct,10) << __func__ << __FFL__ << dendl;
 
   if (listen_socket) {
     worker->center.submit_to(worker->center.get_id(), [this]() {
@@ -299,13 +299,13 @@ AsyncMessenger::~AsyncMessenger()
 
 void AsyncMessenger::ready()
 {
-  ldout(cct,10) << __func__ << " " << get_myaddr() << dendl;
+  ldout(cct,10) << __func__ << " " << get_myaddr() << __FFL__ << dendl;
 
   stack->ready();
   if (pending_bind) {
     int err = bind(pending_bind_addr);
     if (err) {
-      lderr(cct) << __func__ << " postponed bind failed" << dendl;
+      lderr(cct) << __func__ << " postponed bind failed" << __FFL__ << dendl;
       ceph_abort();
     }
   }
@@ -318,7 +318,7 @@ void AsyncMessenger::ready()
 
 int AsyncMessenger::shutdown()
 {
-  ldout(cct,10) << __func__ << " " << get_myaddr() << dendl;
+  ldout(cct,10) << __func__ << " " << get_myaddr() << __FFL__ << dendl;
 
   // done!  clean up.
   for (auto &&p : processors)
@@ -341,15 +341,15 @@ int AsyncMessenger::bind(const entity_addr_t &bind_addr)
   lock.Lock();
 
   if (!pending_bind && started) {
-    ldout(cct,10) << __func__ << " already started" << dendl;
+    ldout(cct,10) << __func__ << " already started" << __FFL__ << dendl;
     lock.Unlock();
     return -1;
   }
 
-  ldout(cct,10) << __func__ << " bind " << bind_addr << dendl;
+  ldout(cct,10) << __func__ << " bind " << bind_addr << __FFL__ << dendl;
 
   if (!stack->is_ready()) {
-    ldout(cct, 10) << __func__ << " Network Stack is not ready for bind yet - postponed" << dendl;
+    ldout(cct, 10) << __func__ << " Network Stack is not ready for bind yet - postponed" << __FFL__ << dendl;
     pending_bind_addr = bind_addr;
     pending_bind = true;
     lock.Unlock();
@@ -385,7 +385,7 @@ int AsyncMessenger::bind(const entity_addr_t &bind_addr)
 
 int AsyncMessenger::rebind(const set<int>& avoid_ports)
 {
-  ldout(cct,1) << __func__ << " rebind avoid " << avoid_ports << dendl;
+  ldout(cct,1) << __func__ << " rebind avoid " << avoid_ports << __FFL__ << dendl;
   assert(did_bind);
 
   for (auto &&p : processors)
@@ -395,7 +395,7 @@ int AsyncMessenger::rebind(const set<int>& avoid_ports)
   // adjust the nonce; we want our entity_addr_t to be truly unique.
   nonce += 1000000;
   ldout(cct, 10) << __func__ << " new nonce " << nonce
-		 << " and inst " << get_myinst() << dendl;
+		 << " and inst " << get_myinst() << __FFL__ << dendl;
 
   entity_addr_t bound_addr;
   entity_addr_t bind_addr = get_myaddr();
@@ -403,7 +403,7 @@ int AsyncMessenger::rebind(const set<int>& avoid_ports)
   set<int> new_avoid(avoid_ports);
   new_avoid.insert(bind_addr.get_port());
   ldout(cct, 10) << __func__ << " will try " << bind_addr
-		 << " and avoid ports " << new_avoid << dendl;
+		 << " and avoid ports " << new_avoid << __FFL__ << dendl;
   unsigned i = 0;
   for (auto &&p : processors) {
     int r = p->bind(bind_addr, avoid_ports, &bound_addr);
@@ -430,10 +430,10 @@ int AsyncMessenger::client_bind(const entity_addr_t &bind_addr)
     return 0;
   }
   if (started) {
-    ldout(cct, 10) << __func__ << " already started" << dendl;
+    ldout(cct, 10) << __func__ << " already started" << __FFL__ << dendl;
     return -1;
   }
-  ldout(cct, 10) << __func__ << " " << bind_addr << dendl;
+  ldout(cct, 10) << __func__ << " " << bind_addr << __FFL__ << dendl;
 
   set_myaddr(bind_addr);
   return 0;
@@ -455,14 +455,14 @@ void AsyncMessenger::_finish_bind(const entity_addr_t& bind_addr,
 
   init_local_connection();
 
-  ldout(cct,1) << __func__ << " bind my_inst.addr is " << get_myaddr() << dendl;
+  ldout(cct,1) << __func__ << " bind my_inst.addr is " << get_myaddr() << __FFL__ << dendl;
   did_bind = true;
 }
 
 int AsyncMessenger::start()
 {
   lock.Lock();
-  ldout(cct,1) << __func__ << " start" << dendl;
+  ldout(cct,1) << __func__ << " start" << __FFL__ << dendl;
 
   // register at least one entity, first!
   assert(my_inst.name.type() >= 0);
@@ -494,18 +494,18 @@ void AsyncMessenger::wait()
 
   dispatch_queue.shutdown();
   if (dispatch_queue.is_started()) {
-    ldout(cct, 10) << __func__ << ": waiting for dispatch queue" << dendl;
+    ldout(cct, 10) << __func__ << ": waiting for dispatch queue" << __FFL__ << dendl;
     dispatch_queue.wait();
     dispatch_queue.discard_local();
-    ldout(cct, 10) << __func__ << ": dispatch queue is stopped" << dendl;
+    ldout(cct, 10) << __func__ << ": dispatch queue is stopped" << __FFL__ << dendl;
   }
 
   // close all connections
   shutdown_connections(false);
   stack->drain();
 
-  ldout(cct, 10) << __func__ << ": done." << dendl;
-  ldout(cct, 1) << __func__ << " complete." << dendl;
+  ldout(cct, 10) << __func__ << ": done." << __FFL__ << dendl;
+  ldout(cct, 1) << __func__ << " complete." << __FFL__ << dendl;
   started = false;
 }
 
@@ -524,7 +524,7 @@ AsyncConnectionRef AsyncMessenger::create_connect(const entity_addr_t& addr, int
   assert(addr != my_inst.addr);
 
   ldout(cct, 10) << __func__ << " " << addr
-      << ", creating connection and registering" << dendl;
+      << ", creating connection and registering" << __FFL__ << dendl;
 
   // create connection
   Worker *w = stack->get_worker();
@@ -547,10 +547,10 @@ ConnectionRef AsyncMessenger::get_connection(const entity_inst_t& dest)
 
   AsyncConnectionRef conn = _lookup_conn(dest.addr);
   if (conn) {
-    ldout(cct, 10) << __func__ << " " << dest << " existing " << conn << dendl;
+    ldout(cct, 10) << __func__ << " " << dest << " existing " << conn << __FFL__ << dendl;
   } else {
     conn = create_connect(dest.addr, dest.name.type());
-    ldout(cct, 10) << __func__ << " " << dest << " new " << conn << dendl;
+    ldout(cct, 10) << __func__ << " " << dest << " new " << conn << __FFL__ << dendl;
   }
 
   return conn;
@@ -573,11 +573,11 @@ int AsyncMessenger::_send_message(Message *m, const entity_inst_t& dest)
 
   ldout(cct, 1) << __func__ << "--> " << dest.name << " "
       << dest.addr << " -- " << *m << " -- ?+"
-      << m->get_data().length() << " " << m << dendl;
+      << m->get_data().length() << " " << m << __FFL__ << dendl;
 
   if (dest.addr == entity_addr_t()) {
     ldout(cct,0) << __func__ <<  " message " << *m
-        << " with empty dest " << dest.addr << dendl;
+        << " with empty dest " << dest.addr << __FFL__ << dendl;
     m->put();
     return -EINVAL;
   }
@@ -598,7 +598,7 @@ void AsyncMessenger::submit_message(Message *m, AsyncConnectionRef con,
       *_dout << " data:\n";
       m->get_data().hexdump(*_dout);
     }
-    *_dout << dendl;
+    *_dout << __FFL__ << dendl;
     m->clear_payload();
   }
 
@@ -620,10 +620,10 @@ void AsyncMessenger::submit_message(Message *m, AsyncConnectionRef con,
   if (policy.server) {
     ldout(cct, 20) << __func__ << " " << *m << " remote, " << dest_addr
         << ", lossy server for target type "
-        << ceph_entity_type_name(dest_type) << ", no session, dropping." << dendl;
+        << ceph_entity_type_name(dest_type) << ", no session, dropping." << __FFL__ << dendl;
     m->put();
   } else {
-    ldout(cct,20) << __func__ << " " << *m << " remote, " << dest_addr << ", new connection." << dendl;
+    ldout(cct,20) << __func__ << " " << *m << " remote, " << dest_addr << ", new connection." << __FFL__ << dendl;
     con = create_connect(dest_addr, dest_type);
     con->send_message(m);
   }
@@ -655,12 +655,12 @@ void AsyncMessenger::set_addr(const entity_addr_t &addr)
 
 void AsyncMessenger::shutdown_connections(bool queue_reset)
 {
-  ldout(cct,1) << __func__ << " " << dendl;
+  ldout(cct,1) << __func__ << " " << __FFL__ << dendl;
   lock.Lock();
   for (set<AsyncConnectionRef>::iterator q = accepting_conns.begin();
        q != accepting_conns.end(); ++q) {
     AsyncConnectionRef p = *q;
-    ldout(cct, 5) << __func__ << " accepting_conn " << p.get() << dendl;
+    ldout(cct, 5) << __func__ << " accepting_conn " << p.get() << __FFL__ << dendl;
     p->stop(queue_reset);
   }
   accepting_conns.clear();
@@ -668,7 +668,7 @@ void AsyncMessenger::shutdown_connections(bool queue_reset)
   while (!conns.empty()) {
     ceph::unordered_map<entity_addr_t, AsyncConnectionRef>::iterator it = conns.begin();
     AsyncConnectionRef p = it->second;
-    ldout(cct, 5) << __func__ << " mark down " << it->first << " " << p << dendl;
+    ldout(cct, 5) << __func__ << " mark down " << it->first << " " << p << __FFL__ << dendl;
     conns.erase(it);
     p->get_perf_counter()->dec(l_msgr_active_connections);
     p->stop(queue_reset);
@@ -679,7 +679,7 @@ void AsyncMessenger::shutdown_connections(bool queue_reset)
     while (!deleted_conns.empty()) {
       set<AsyncConnectionRef>::iterator it = deleted_conns.begin();
       AsyncConnectionRef p = *it;
-      ldout(cct, 5) << __func__ << " delete " << p << dendl;
+      ldout(cct, 5) << __func__ << " delete " << p << __FFL__ << dendl;
       deleted_conns.erase(it);
     }
   }
@@ -691,10 +691,10 @@ void AsyncMessenger::mark_down(const entity_addr_t& addr)
   lock.Lock();
   AsyncConnectionRef p = _lookup_conn(addr);
   if (p) {
-    ldout(cct, 1) << __func__ << " " << addr << " -- " << p << dendl;
+    ldout(cct, 1) << __func__ << " " << addr << " -- " << p << __FFL__ << dendl;
     p->stop(true);
   } else {
-    ldout(cct, 1) << __func__ << " " << addr << " -- connection dne" << dendl;
+    ldout(cct, 1) << __func__ << " " << addr << " -- connection dne" << __FFL__ << dendl;
   }
   lock.Unlock();
 }
@@ -735,7 +735,7 @@ void AsyncMessenger::learned_addr(const entity_addr_t &peer_addr_for_me)
     t.set_port(my_inst.addr.get_port());
     t.set_nonce(my_inst.addr.get_nonce());
     my_inst.addr = t;
-    ldout(cct, 1) << __func__ << " learned my addr " << my_inst.addr << dendl;
+    ldout(cct, 1) << __func__ << " learned my addr " << my_inst.addr << __FFL__ << dendl;
     _init_local_connection();
   }
   lock.Unlock();
@@ -743,7 +743,7 @@ void AsyncMessenger::learned_addr(const entity_addr_t &peer_addr_for_me)
 
 int AsyncMessenger::reap_dead()
 {
-  ldout(cct, 1) << __func__ << " start" << dendl;
+  ldout(cct, 1) << __func__ << " start" << __FFL__ << dendl;
   int num = 0;
 
   Mutex::Locker l1(lock);
@@ -752,7 +752,7 @@ int AsyncMessenger::reap_dead()
   while (!deleted_conns.empty()) {
     auto it = deleted_conns.begin();
     AsyncConnectionRef p = *it;
-    ldout(cct, 5) << __func__ << " delete " << p << dendl;
+    ldout(cct, 5) << __func__ << " delete " << p << __FFL__ << dendl;
     auto conns_it = conns.find(p->peer_addr);
     if (conns_it != conns.end() && conns_it->second == p)
       conns.erase(conns_it);

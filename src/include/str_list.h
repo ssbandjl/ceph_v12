@@ -6,6 +6,13 @@
 #include <string>
 #include <vector>
 
+#ifndef __FILENAME__
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+#ifndef __FFL__
+#define __FFL__ "" << __func__ << " " << __FILENAME__ << ":" << __LINE__
+#endif
+
 /**
  * Split **str** into a list of strings, using the ";,= \t" delimiters and output the result in **str_list**.
  * 

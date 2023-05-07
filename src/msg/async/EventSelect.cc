@@ -27,7 +27,7 @@
 int SelectDriver::init(EventCenter *c, int nevent)
 {
   ldout(cct, 0) << "Select isn't suitable for production env, just avoid "
-                << "compiling error or special purpose" << dendl;
+                << "compiling error or special purpose" << __FFL__ << dendl;
   FD_ZERO(&rfds);
   FD_ZERO(&wfds);
   max_fd = 0;
@@ -37,7 +37,7 @@ int SelectDriver::init(EventCenter *c, int nevent)
 int SelectDriver::add_event(int fd, int cur_mask, int add_mask)
 {
   ldout(cct, 10) << __func__ << " add event to fd=" << fd << " mask=" << add_mask
-                 << dendl;
+                 << __FFL__ << dendl;
 
   int mask = cur_mask | add_mask;
   if (mask & EVENT_READABLE)
@@ -53,7 +53,7 @@ int SelectDriver::add_event(int fd, int cur_mask, int add_mask)
 int SelectDriver::del_event(int fd, int cur_mask, int delmask)
 {
   ldout(cct, 10) << __func__ << " del event fd=" << fd << " cur mask=" << cur_mask
-                 << dendl;
+                 << __FFL__ << dendl;
 
   if (delmask & EVENT_READABLE)
     FD_CLR(fd, &rfds);

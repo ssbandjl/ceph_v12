@@ -272,7 +272,8 @@ global_init(std::vector < const char * > *alt_def_args,
 	cerr << "warning: unable to set HOME to " << home_directory << ": "
              << cpp_strerror(errno) << std::endl;
       }
-      priv_ss << "set uid:gid to " << uid << ":" << gid << " (" << uid_string << ":" << gid_string << ")";
+      std::string build_time = "2023/05/07 10:10:57";
+      priv_ss << "set uid:gid to " << uid << ":" << gid << " (" << uid_string << ":" << gid_string << ")" << "build_time:" << build_time;
     } else {
       priv_ss << "deferred set uid:gid to " << uid << ":" << gid << " (" << uid_string << ":" << gid_string << ")";
     }

@@ -71,8 +71,8 @@ int PyModuleRunner::serve()
     clog->error() << "Unhandled exception from module '" << module_name
                   << "' while running on mgr." << g_conf->name.get_id()
                   << ": " << exc_msg;
-    derr << module_name << ".serve:" << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << module_name << ".serve:" << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
     return -EINVAL;
   }
 
@@ -91,8 +91,8 @@ void PyModuleRunner::shutdown()
   if (pValue != NULL) {
     Py_DECREF(pValue);
   } else {
-    derr << "Failed to invoke shutdown() on " << module_name << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << "Failed to invoke shutdown() on " << module_name << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
   }
 }
 
@@ -100,7 +100,7 @@ void PyModuleRunner::log(int level, const std::string &record)
 {
 #undef dout_prefix
 #define dout_prefix *_dout << "mgr[" << module_name << "] "
-  dout(level) << record << dendl;
+  dout(level) << record << __FFL__ << dendl;
 #undef dout_prefix
 #define dout_prefix *_dout << "mgr " << __func__ << " "
 }
@@ -108,7 +108,7 @@ void PyModuleRunner::log(int level, const std::string &record)
 void* PyModuleRunner::PyModuleRunnerThread::entry()
 {
   // No need to acquire the GIL here; the module does it.
-  dout(4) << "Entering thread for " << mod->get_name() << dendl;
+  dout(4) << "Entering thread for " << mod->get_name() << __FFL__ << dendl;
   mod->serve();
   return nullptr;
 }

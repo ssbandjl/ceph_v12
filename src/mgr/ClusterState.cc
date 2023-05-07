@@ -88,7 +88,7 @@ void ClusterState::ingest_pgstats(MPGStats *stats)
                << pg_stats.reported_seq
                << " state " << pg_state_string(pg_stats.state)
                << " but pool not in " << existing_pools
-               << dendl;
+               << __FFL__ << dendl;
       continue;
     }
     // In case we already heard about more recent stats from this PG
@@ -98,7 +98,7 @@ void ClusterState::ingest_pgstats(MPGStats *stats)
 	q->second.get_version_pair() > pg_stats.get_version_pair()) {
       dout(15) << " had " << pgid << " from "
 	       << q->second.reported_epoch << ":"
-               << q->second.reported_seq << dendl;
+               << q->second.reported_seq << __FFL__ << dendl;
       continue;
     }
 
@@ -110,18 +110,18 @@ void ClusterState::update_delta_stats()
 {
   pending_inc.stamp = ceph_clock_now();
   pending_inc.version = pg_map.version + 1; // to make apply_incremental happy
-  dout(10) << " v" << pending_inc.version << dendl;
+  dout(10) << " v" << pending_inc.version << __FFL__ << dendl;
 
   dout(30) << " pg_map before:\n";
   JSONFormatter jf(true);
   jf.dump_object("pg_map", pg_map);
   jf.flush(*_dout);
-  *_dout << dendl;
+  *_dout << __FFL__ << dendl;
   dout(30) << " incremental:\n";
   JSONFormatter jf(true);
   jf.dump_object("pending_inc", pending_inc);
   jf.flush(*_dout);
-  *_dout << dendl;
+  *_dout << __FFL__ << dendl;
 
   pg_map.apply_incremental(g_ceph_context, pending_inc);
   pending_inc = PGMap::Incremental();
@@ -133,7 +133,7 @@ void ClusterState::notify_osdmap(const OSDMap &osd_map)
 
   pending_inc.stamp = ceph_clock_now();
   pending_inc.version = pg_map.version + 1; // to make apply_incremental happy
-  dout(10) << " v" << pending_inc.version << dendl;
+  dout(10) << " v" << pending_inc.version << __FFL__ << dendl;
 
   PGMapUpdater::check_osd_map(g_ceph_context, osd_map, pg_map, &pending_inc);
 
@@ -154,12 +154,12 @@ void ClusterState::notify_osdmap(const OSDMap &osd_map)
   JSONFormatter jf(true);
   jf.dump_object("pg_map", pg_map);
   jf.flush(*_dout);
-  *_dout << dendl;
+  *_dout << __FFL__ << dendl;
   dout(30) << " incremental:\n";
   JSONFormatter jf(true);
   jf.dump_object("pending_inc", pending_inc);
   jf.flush(*_dout);
-  *_dout << dendl;
+  *_dout << __FFL__ << dendl;
 
   pg_map.apply_incremental(g_ceph_context, pending_inc);
   pending_inc = PGMap::Incremental();
@@ -260,7 +260,7 @@ bool ClusterState::asok_command(std::string admin_command, const cmdmap_t& cmdma
 	auto stale_time = g_ceph_context->_conf->get_val<int64_t>("osd_mon_heartbeat_stat_stale");
 	if (now.sec() - j.second.last_update > stale_time) {
 	  dout(20) << __func__ << " time out heartbeat for osd " << i.first
-	           << " last_update " << j.second.last_update << dendl;
+	           << " last_update " << j.second.last_update << __FFL__ << dendl;
 	   continue;
 	}
 	mgr_ping_time_t item;

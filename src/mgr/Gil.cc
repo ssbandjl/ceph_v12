@@ -35,7 +35,7 @@ Gil::Gil(SafeThreadState &ts, bool new_thread) : pThreadState(ts)
 {
   // Acquire the GIL, set the current thread state
   PyEval_RestoreThread(pThreadState.ts);
-  dout(25) << "GIL acquired for thread state " << pThreadState.ts << dendl;
+  dout(25) << "GIL acquired for thread state " << pThreadState.ts << __FFL__ << dendl;
 
   //
   // If called from a separate OS thread (i.e. a thread not created
@@ -58,7 +58,7 @@ Gil::Gil(SafeThreadState &ts, bool new_thread) : pThreadState(ts)
   if (new_thread) {
     pNewThreadState = PyThreadState_New(pThreadState.ts->interp);
     PyThreadState_Swap(pNewThreadState);
-    dout(20) << "Switched to new thread state " << pNewThreadState << dendl;
+    dout(20) << "Switched to new thread state " << pNewThreadState << __FFL__ << dendl;
   } else {
     assert(pthread_self() == pThreadState.thread);
   }
@@ -67,13 +67,13 @@ Gil::Gil(SafeThreadState &ts, bool new_thread) : pThreadState(ts)
 Gil::~Gil()
 {
   if (pNewThreadState != nullptr) {
-    dout(20) << "Destroying new thread state " << pNewThreadState << dendl;
+    dout(20) << "Destroying new thread state " << pNewThreadState << __FFL__ << dendl;
     PyThreadState_Swap(pThreadState.ts);
     PyThreadState_Clear(pNewThreadState);
     PyThreadState_Delete(pNewThreadState);
   }
   // Release the GIL, reset the thread state to NULL
   PyEval_SaveThread();
-  dout(25) << "GIL released for thread state " << pThreadState.ts << dendl;
+  dout(25) << "GIL released for thread state " << pThreadState.ts << __FFL__ << dendl;
 }
 

@@ -40,7 +40,7 @@ int NetHandler::create_socket(int domain, bool reuse_addr)
 
   if ((s = socket_cloexec(domain, SOCK_STREAM, 0)) == -1) {
     r = errno;
-    lderr(cct) << __func__ << " couldn't create socket " << cpp_strerror(r) << dendl;
+    lderr(cct) << __func__ << " couldn't create socket " << cpp_strerror(r) << __FFL__ << dendl;
     return -r;
   }
 
@@ -52,7 +52,7 @@ int NetHandler::create_socket(int domain, bool reuse_addr)
     if (::setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) {
       r = errno;
       lderr(cct) << __func__ << " setsockopt SO_REUSEADDR failed: "
-                 << strerror(r) << dendl;
+                 << strerror(r) << __FFL__ << dendl;
       close(s);
       return -r;
     }
@@ -72,12 +72,12 @@ int NetHandler::set_nonblock(int sd)
    * interrupted by a signal. */
   if ((flags = fcntl(sd, F_GETFL)) < 0 ) {
     r = errno;
-    lderr(cct) << __func__ << " fcntl(F_GETFL) failed: " << cpp_strerror(r) << dendl;
+    lderr(cct) << __func__ << " fcntl(F_GETFL) failed: " << cpp_strerror(r) << __FFL__ << dendl;
     return -r;
   }
   if (fcntl(sd, F_SETFL, flags | O_NONBLOCK) < 0) {
     r = errno;
-    lderr(cct) << __func__ << " fcntl(F_SETFL,O_NONBLOCK): " << cpp_strerror(r) << dendl;
+    lderr(cct) << __func__ << " fcntl(F_SETFL,O_NONBLOCK): " << cpp_strerror(r) << __FFL__ << dendl;
     return -r;
   }
 
@@ -93,14 +93,14 @@ int NetHandler::set_socket_options(int sd, bool nodelay, int size)
     r = ::setsockopt(sd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag));
     if (r < 0) {
       r = errno;
-      ldout(cct, 0) << "couldn't set TCP_NODELAY: " << cpp_strerror(r) << dendl;
+      ldout(cct, 0) << "couldn't set TCP_NODELAY: " << cpp_strerror(r) << __FFL__ << dendl;
     }
   }
   if (size) {
     r = ::setsockopt(sd, SOL_SOCKET, SO_RCVBUF, (void*)&size, sizeof(size));
     if (r < 0)  {
       r = errno;
-      ldout(cct, 0) << "couldn't set SO_RCVBUF to " << size << ": " << cpp_strerror(r) << dendl;
+      ldout(cct, 0) << "couldn't set SO_RCVBUF to " << size << ": " << cpp_strerror(r) << __FFL__ << dendl;
     }
   }
 
@@ -110,7 +110,7 @@ int NetHandler::set_socket_options(int sd, bool nodelay, int size)
   r = ::setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (void*)&val, sizeof(val));
   if (r) {
     r = errno;
-    ldout(cct,0) << "couldn't set SO_NOSIGPIPE: " << cpp_strerror(r) << dendl;
+    ldout(cct,0) << "couldn't set SO_NOSIGPIPE: " << cpp_strerror(r) << __FFL__ << dendl;
   }
 #endif
   return -r;
@@ -134,13 +134,13 @@ void NetHandler::set_priority(int sd, int prio, int domain)
     break;
   default:
     lderr(cct) << "couldn't set ToS of unknown family (" << domain << ")"
-	       << " to " << iptos << dendl;
+	       << " to " << iptos << __FFL__ << dendl;
     return;
   }
   if (r < 0) {
     r = errno;
     ldout(cct,0) << "couldn't set TOS to " << iptos
-		 << ": " << cpp_strerror(r) << dendl;
+		 << ": " << cpp_strerror(r) << __FFL__ << dendl;
   }
 
 #endif	// IPTOS_CLASS_CS6
@@ -151,7 +151,7 @@ void NetHandler::set_priority(int sd, int prio, int domain)
   if (r < 0) {
     r = errno;
     ldout(cct, 0) << __func__ << " couldn't set SO_PRIORITY to " << prio
-		  << ": " << cpp_strerror(r) << dendl;
+		  << ": " << cpp_strerror(r) << __FFL__ << dendl;
   }
 #else
   return;
@@ -182,7 +182,7 @@ int NetHandler::generic_connect(const entity_addr_t& addr, const entity_addr_t &
       ret = ::bind(s, addr.get_sockaddr(), addr.get_sockaddr_len());
       if (ret < 0) {
         ret = errno;
-        ldout(cct, 2) << __func__ << " client bind error " << ", " << cpp_strerror(ret) << dendl;
+        ldout(cct, 2) << __func__ << " client bind error " << ", " << cpp_strerror(ret) << __FFL__ << dendl;
         close(s);
         return -ret;
       }
@@ -195,7 +195,7 @@ int NetHandler::generic_connect(const entity_addr_t& addr, const entity_addr_t &
     if (errno == EINPROGRESS && nonblock)
       return s;
 
-    ldout(cct, 10) << __func__ << " connect: " << cpp_strerror(ret) << dendl;
+    ldout(cct, 10) << __func__ << " connect: " << cpp_strerror(ret) << __FFL__ << dendl;
     close(s);
     return -ret;
   }
@@ -210,7 +210,7 @@ int NetHandler::reconnect(const entity_addr_t &addr, int sd)
 
   if (ret < 0 && errno != EISCONN) {
     r = errno;
-    ldout(cct, 10) << __func__ << " reconnect: " << strerror(r) << dendl;
+    ldout(cct, 10) << __func__ << " reconnect: " << strerror(r) << __FFL__ << dendl;
     if (r == EINPROGRESS || r == EALREADY)
       return 1;
     return -r;

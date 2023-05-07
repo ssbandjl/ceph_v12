@@ -60,7 +60,7 @@ static PyObject *osdmap_new_incremental(BasePyOSDMap *self, PyObject *obj)
   // actually use this map in the real world (and even if we did it would
   // be a no-op).
   self->osdmap->crush->encode(inc->crush, CEPH_FEATURES_ALL);
-  dout(10) << __func__ << " " << inc << dendl;
+  dout(10) << __func__ << " " << inc << __FFL__ << dendl;
 
   return construct_with_capsule("mgr_module", "OSDMapIncremental",
                                 (void*)(inc));
@@ -70,7 +70,7 @@ static PyObject *osdmap_apply_incremental(BasePyOSDMap *self,
     BasePyOSDMapIncremental *incobj)
 {
   if (!PyObject_TypeCheck(incobj, &BasePyOSDMapIncrementalType)) {
-    derr << "Wrong type in osdmap_apply_incremental!" << dendl;
+    derr << "Wrong type in osdmap_apply_incremental!" << __FFL__ << dendl;
     return nullptr;
   }
 
@@ -80,7 +80,7 @@ static PyObject *osdmap_apply_incremental(BasePyOSDMap *self,
   next->decode(bl);
   next->apply_incremental(*(incobj->inc));
   dout(10) << __func__ << " map " << self->osdmap << " inc " << incobj->inc
-	   << " next " << next << dendl;
+	   << " next " << next << __FFL__ << dendl;
 
   return construct_with_capsule("mgr_module", "OSDMap", (void*)next);
 }
@@ -122,21 +122,21 @@ static PyObject *osdmap_calc_pg_upmaps(BasePyOSDMap* self, PyObject *args)
     return nullptr;
   }
   if (!PyList_CheckExact(pool_list)) {
-    derr << __func__ << " pool_list not a list" << dendl;
+    derr << __func__ << " pool_list not a list" << __FFL__ << dendl;
     return nullptr;
   }
   set<int64_t> pools;
   for (auto i = 0; i < PyList_Size(pool_list); ++i) {
     PyObject *pool_name = PyList_GET_ITEM(pool_list, i);
     if (!PyString_Check(pool_name)) {
-      derr << __func__ << " " << pool_name << " not a string" << dendl;
+      derr << __func__ << " " << pool_name << " not a string" << __FFL__ << dendl;
       return nullptr;
     }
     auto pool_id = self->osdmap->lookup_pg_pool_name(
       PyString_AsString(pool_name));
     if (pool_id < 0) {
       derr << __func__ << " pool '" << PyString_AsString(pool_name)
-           << "' does not exist" << dendl;
+           << "' does not exist" << __FFL__ << dendl;
       return nullptr;
     }
     pools.insert(pool_id);
@@ -146,7 +146,7 @@ static PyObject *osdmap_calc_pg_upmaps(BasePyOSDMap* self, PyObject *args)
 	   << " max_deviation " << max_deviation
 	   << " max_iterations " << max_iterations
 	   << " pools " << pools
-	   << dendl;
+	   << __FFL__ << dendl;
   PyThreadState *tstate = PyEval_SaveThread();
   int r = self->osdmap->calc_pg_upmaps(g_ceph_context,
 				 max_deviation,
@@ -154,7 +154,7 @@ static PyObject *osdmap_calc_pg_upmaps(BasePyOSDMap* self, PyObject *args)
 				 pools,
 				 incobj->inc);
   PyEval_RestoreThread(tstate);
-  dout(10) << __func__ << " r = " << r << dendl;
+  dout(10) << __func__ << " r = " << r << __FFL__ << dendl;
   return PyInt_FromLong(r);
 }
 
@@ -214,7 +214,7 @@ BasePyOSDMap_dealloc(BasePyOSDMap *self)
     delete self->osdmap;
     self->osdmap = nullptr;
   } else {
-    derr << "Destroying improperly initialized BasePyOSDMap " << self << dendl;
+    derr << "Destroying improperly initialized BasePyOSDMap " << self << __FFL__ << dendl;
   }
   Py_TYPE(self)->tp_free(self);
 }
@@ -312,7 +312,7 @@ BasePyOSDMapIncremental_dealloc(BasePyOSDMapIncremental *self)
     delete self->inc;
     self->inc = nullptr;
   } else {
-    derr << "Destroying improperly initialized BasePyOSDMap " << self << dendl;
+    derr << "Destroying improperly initialized BasePyOSDMap " << self << __FFL__ << dendl;
   }
   Py_TYPE(self)->tp_free(self);
 }
@@ -337,14 +337,14 @@ static int get_int_float_map(PyObject *obj, map<int,double> *out)
   for (int j = 0; j < PyList_Size(ls); ++j) {
     PyObject *pair = PyList_GET_ITEM(ls, j);
     if (!PyTuple_Check(pair)) {
-      derr << __func__ << " item " << j << " not a tuple" << dendl;
+      derr << __func__ << " item " << j << " not a tuple" << __FFL__ << dendl;
       Py_DECREF(ls);
       return -1;
     }
     int k;
     double v;
     if (!PyArg_ParseTuple(pair, "id:pair", &k, &v)) {
-      derr << __func__ << " item " << j << " not a size 2 tuple" << dendl;
+      derr << __func__ << " item " << j << " not a size 2 tuple" << __FFL__ << dendl;
       Py_DECREF(ls);
       return -1;
     }

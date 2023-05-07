@@ -44,7 +44,7 @@ int XioPortal::bind(struct xio_session_ops *ops, const string &base_uri,
   if (assigned_port)
     *assigned_port = assigned;
   ldout(msgr->cct,20) << "xio_bind: portal " << xio_uri
-    << " returned server " << server << dendl;
+    << " returned server " << server << __FFL__ << dendl;
   return 0;
 }
 
@@ -81,13 +81,13 @@ int XioPortals::bind(struct xio_session_ops *ops, const string& base_uri,
       if (r != 0) {
         lderr(msgr->cct) << "portal.bind unable to bind to " << base_uri
             << " on any port in range " << msgr->cct->_conf->ms_bind_port_min
-            << "-" << port_max << ": " << xio_strerror(r) << dendl;
+            << "-" << port_max << ": " << xio_strerror(r) << __FFL__ << dendl;
         return -r;
       }
     }
 
     ldout(msgr->cct,5) << "xp::bind: portal " << i << " bind OK: "
-      << portals[i]->xio_uri << dendl;
+      << portals[i]->xio_uri << __FFL__ << dendl;
 
     if (i == 0 && port0 != NULL)
       *port0 = result_port;

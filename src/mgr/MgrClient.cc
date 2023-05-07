@@ -82,7 +82,7 @@ bool MgrClient::ms_dispatch(Message *m)
       return false;
     }
   default:
-    ldout(cct, 30) << "Not handling " << *m << dendl; 
+    ldout(cct, 30) << "Not handling " << *m << __FFL__ << dendl; 
     return false;
   }
 }
@@ -93,7 +93,7 @@ void MgrClient::reconnect()
 
   if (session) {
     ldout(cct, 4) << "Terminating session with "
-		  << session->con->get_peer_addr() << dendl;
+		  << session->con->get_peer_addr() << __FFL__ << dendl;
     session->con->mark_down();
     session.reset();
     stats_period = 0;
@@ -104,7 +104,7 @@ void MgrClient::reconnect()
   }
 
   if (!map.get_available()) {
-    ldout(cct, 4) << "No active mgr available yet" << dendl;
+    ldout(cct, 4) << "No active mgr available yet" << __FFL__ << dendl;
     return;
   }
 
@@ -121,7 +121,7 @@ void MgrClient::reconnect()
 	      reconnect();
 	    }));
       }
-      ldout(cct, 4) << "waiting to retry connect until " << when << dendl;
+      ldout(cct, 4) << "waiting to retry connect until " << when << __FFL__ << dendl;
       return;
     }
   }
@@ -132,7 +132,7 @@ void MgrClient::reconnect()
   }
 
   ldout(cct, 4) << "Starting new session with " << map.get_active_addr()
-		<< dendl;
+		<< __FFL__ << dendl;
   entity_inst_t inst;
   inst.addr = map.get_active_addr();
   inst.name = entity_name_t::MGR(map.get_active_gid());
@@ -182,13 +182,13 @@ bool MgrClient::handle_mgr_map(MMgrMap *m)
 {
   assert(lock.is_locked_by_me());
 
-  ldout(cct, 20) << *m << dendl;
+  ldout(cct, 20) << *m << __FFL__ << dendl;
 
   map = m->get_map();
-  ldout(cct, 4) << "Got map version " << map.epoch << dendl;
+  ldout(cct, 4) << "Got map version " << map.epoch << __FFL__ << dendl;
   m->put();
 
-  ldout(cct, 4) << "Active mgr is now " << map.get_active_addr() << dendl;
+  ldout(cct, 4) << "Active mgr is now " << map.get_active_addr() << __FFL__ << dendl;
 
   // Reset session?
   if (!session ||
@@ -203,7 +203,7 @@ bool MgrClient::ms_handle_reset(Connection *con)
 {
   Mutex::Locker l(lock);
   if (session && con == session->con) {
-    ldout(cct, 4) << __func__ << " con " << con << dendl;
+    ldout(cct, 4) << __func__ << " con " << con << __FFL__ << dendl;
     reconnect();
     return true;
   }
@@ -253,7 +253,7 @@ void MgrClient::_send_report()
     auto undeclare = [report, this](const std::string &path)
     {
       report->undeclare_types.push_back(path);
-      ldout(cct,20) << " undeclare " << path << dendl;
+      ldout(cct,20) << " undeclare " << path << __FFL__ << dendl;
       session->declared.erase(path);
     };
 
@@ -282,7 +282,7 @@ void MgrClient::_send_report()
       }
 
       if (session->declared.count(path) == 0) {
-	ldout(cct,20) << " declare " << path << dendl;
+	ldout(cct,20) << " declare " << path << __FFL__ << dendl;
 	PerfCounterType type;
 	type.path = path;
 	if (data.description) {
@@ -310,10 +310,10 @@ void MgrClient::_send_report()
                       "of possible " << by_path.size() << "), "
 		   << report->declare_types.size() << " new, "
                    << report->undeclare_types.size() << " removed"
-                   << dendl;
+                   << __FFL__ << dendl;
   });
 
-  ldout(cct, 20) << "encoded " << report->packed.length() << " bytes" << dendl;
+  ldout(cct, 20) << "encoded " << report->packed.length() << " bytes" << __FFL__ << dendl;
 
   if (daemon_name.size()) {
     report->daemon_name = daemon_name;
@@ -348,18 +348,18 @@ bool MgrClient::handle_mgr_configure(MMgrConfigure *m)
 {
   assert(lock.is_locked_by_me());
 
-  ldout(cct, 20) << *m << dendl;
+  ldout(cct, 20) << *m << __FFL__ << dendl;
 
   if (!session) {
-    lderr(cct) << "dropping unexpected configure message" << dendl;
+    lderr(cct) << "dropping unexpected configure message" << __FFL__ << dendl;
     m->put();
     return true;
   }
 
-  ldout(cct, 4) << "stats_period=" << m->stats_period << dendl;
+  ldout(cct, 4) << "stats_period=" << m->stats_period << __FFL__ << dendl;
 
   if (stats_threshold != m->stats_threshold) {
-    ldout(cct, 4) << "updated stats threshold: " << m->stats_threshold << dendl;
+    ldout(cct, 4) << "updated stats threshold: " << m->stats_threshold << __FFL__ << dendl;
     stats_threshold = m->stats_threshold;
   }
 
@@ -379,10 +379,10 @@ int MgrClient::start_command(const vector<string>& cmd, const bufferlist& inbl,
 {
   Mutex::Locker l(lock);
 
-  ldout(cct, 20) << "cmd: " << cmd << dendl;
+  ldout(cct, 20) << "cmd: " << cmd << __FFL__ << dendl;
 
   if (map.epoch == 0) {
-    ldout(cct,20) << " no MgrMap, assuming EACCES" << dendl;
+    ldout(cct,20) << " no MgrMap, assuming EACCES" << __FFL__ << dendl;
     return -EACCES;
   }
 
@@ -405,12 +405,12 @@ bool MgrClient::handle_command_reply(MCommandReply *m)
 {
   assert(lock.is_locked_by_me());
 
-  ldout(cct, 20) << *m << dendl;
+  ldout(cct, 20) << *m << __FFL__ << dendl;
 
   const auto tid = m->get_tid();
   if (!command_table.exists(tid)) {
     ldout(cct, 4) << "handle_command_reply tid " << m->get_tid()
-            << " not found" << dendl;
+            << " not found" << __FFL__ << dendl;
     m->put();
     return true;
   }
@@ -451,7 +451,7 @@ int MgrClient::service_daemon_register(
   if (service_daemon) {
     return -EEXIST;
   }
-  ldout(cct,1) << service << "." << name << " metadata " << metadata << dendl;
+  ldout(cct,1) << service << "." << name << " metadata " << metadata << __FFL__ << dendl;
   service_daemon = true;
   service_name = service;
   daemon_name = name;
@@ -470,7 +470,7 @@ int MgrClient::service_daemon_update_status(
   const std::map<std::string,std::string>& status)
 {
   Mutex::Locker l(lock);
-  ldout(cct,10) << status << dendl;
+  ldout(cct,10) << status << __FFL__ << dendl;
   daemon_status = status;
   daemon_dirty_status = true;
   return 0;

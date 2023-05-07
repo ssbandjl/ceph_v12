@@ -71,7 +71,7 @@ interface::interface(CephContext *c, std::shared_ptr<DPDKDevice> dev, EventCente
         *eh = eh->hton();
         ldout(cct, 10) << "=== tx === proto " << std::hex << uint16_t(l3pv.proto_num)
                        << " " << _hw_address << " -> " << l3pv.to
-                       << " length " << std::dec << l3pv.p.len() << dendl;
+                       << " length " << std::dec << l3pv.p.len() << __FFL__ << dendl;
         p = std::move(l3pv.p);
         return p;
       }
@@ -138,11 +138,11 @@ int interface::dispatch_packet(EventCenter *center, Packet p) {
     if (hwrss) {
       ldout(cct, 10) << __func__ << " === rx === proto " << std::hex << ::ntoh(eh->eth_proto)
                      << " "<< eh->src_mac.ntoh() << " -> " << eh->dst_mac.ntoh()
-                     << " length " << std::dec << p.len() << " rss_hash " << *p.rss_hash() << dendl;
+                     << " length " << std::dec << p.len() << " rss_hash " << *p.rss_hash() << __FFL__ << dendl;
     } else {
       ldout(cct, 10) << __func__ << " === rx === proto " << std::hex << ::ntoh(eh->eth_proto)
                      << " "<< eh->src_mac.ntoh() << " -> " << eh->dst_mac.ntoh()
-                     << " length " << std::dec << p.len() << dendl;
+                     << " length " << std::dec << p.len() << __FFL__ << dendl;
     }
     if (i != _proto_map.end()) {
       l3_rx_stream& l3 = i->second;
@@ -159,7 +159,7 @@ int interface::dispatch_packet(EventCenter *center, Packet p) {
         }
       });
       if (fw != center->get_id()) {
-        ldout(cct, 1) << __func__ << " forward to " << fw << dendl;
+        ldout(cct, 1) << __func__ << " forward to " << fw << __FFL__ << dendl;
         forward(center, fw, std::move(p));
       } else {
         auto h = eh->ntoh();

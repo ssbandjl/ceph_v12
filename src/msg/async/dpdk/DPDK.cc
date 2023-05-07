@@ -174,12 +174,12 @@ int DPDKDevice::init_port_start()
   //
   if (std::string("rte_i40evf_pmd") == _dev_info.driver_name ||
       std::string("rte_i40e_pmd") == _dev_info.driver_name) {
-    ldout(cct, 1) << __func__ << " Device is an Intel's 40G NIC. Enabling 8 fragments hack!" << dendl;
+    ldout(cct, 1) << __func__ << " Device is an Intel's 40G NIC. Enabling 8 fragments hack!" << __FFL__ << dendl;
     _is_i40e_device = true;
   }
 
   if (std::string("rte_vmxnet3_pmd") == _dev_info.driver_name) {
-    ldout(cct, 1) << __func__ << " Device is a VMWare Virtual NIC. Enabling 16 fragments hack!" << dendl;
+    ldout(cct, 1) << __func__ << " Device is a VMWare Virtual NIC. Enabling 16 fragments hack!" << __FFL__ << dendl;
     _is_vmxnet3_device = true;
   }
 
@@ -237,12 +237,12 @@ int DPDKDevice::init_port_start()
 
   ldout(cct, 5) << __func__ << " Port " << int(_port_idx) << ": max_rx_queues "
                 << _dev_info.max_rx_queues << "  max_tx_queues "
-                << _dev_info.max_tx_queues << dendl;
+                << _dev_info.max_tx_queues << __FFL__ << dendl;
 
   _num_queues = std::min({_num_queues, _dev_info.max_rx_queues, _dev_info.max_tx_queues});
 
   ldout(cct, 5) << __func__ << " Port " << int(_port_idx) << ": using "
-                << _num_queues << " queues" << dendl;;
+                << _num_queues << " queues" << __FFL__ << dendl;;
 
   // Set RSS mode: enable RSS if seastar is configured with more than 1 CPU.
   // Even if port has a single queue we still want the RSS feature to be
@@ -281,7 +281,7 @@ int DPDKDevice::init_port_start()
       _redir_table.resize(_dev_info.reta_size);
       _rss_table_bits = std::lround(std::log2(_dev_info.reta_size));
       ldout(cct, 5) << __func__ << " Port " << int(_port_idx)
-                    << ": RSS table size is " << _dev_info.reta_size << dendl;
+                    << ": RSS table size is " << _dev_info.reta_size << __FFL__ << dendl;
     } else {
       // FIXME: same with sw_reta
       _redir_table.resize(128);
@@ -302,12 +302,12 @@ int DPDKDevice::init_port_start()
 #ifdef RTE_ETHDEV_HAS_LRO_SUPPORT
   // Enable LRO
   if (_use_lro && (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_TCP_LRO)) {
-    ldout(cct, 1) << __func__ << " LRO is on" << dendl;
+    ldout(cct, 1) << __func__ << " LRO is on" << __FFL__ << dendl;
     port_conf.rxmode.enable_lro = 1;
     _hw_features.rx_lro = true;
   } else
 #endif
-    ldout(cct, 1) << __func__ << " LRO is off" << dendl;
+    ldout(cct, 1) << __func__ << " LRO is off" << __FFL__ << dendl;
 
   // Check that all CSUM features are either all set all together or not set
   // all together. If this assumption breaks we need to rework the below logic
@@ -321,19 +321,19 @@ int DPDKDevice::init_port_start()
   // Set Rx checksum checking
   if ((_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_IPV4_CKSUM) &&
       (_dev_info.rx_offload_capa & DEV_RX_OFFLOAD_TCP_CKSUM)) {
-    ldout(cct, 1) << __func__ << " RX checksum offload supported" << dendl;
+    ldout(cct, 1) << __func__ << " RX checksum offload supported" << __FFL__ << dendl;
     port_conf.rxmode.hw_ip_checksum = 1;
     _hw_features.rx_csum_offload = 1;
   }
 
   if ((_dev_info.tx_offload_capa & DEV_TX_OFFLOAD_IPV4_CKSUM)) {
-    ldout(cct, 1) << __func__ << " TX ip checksum offload supported" << dendl;
+    ldout(cct, 1) << __func__ << " TX ip checksum offload supported" << __FFL__ << dendl;
     _hw_features.tx_csum_ip_offload = 1;
   }
 
   // TSO is supported starting from DPDK v1.8
   if (_dev_info.tx_offload_capa & DEV_TX_OFFLOAD_TCP_TSO) {
-    ldout(cct, 1) << __func__ << " TSO is supported" << dendl;
+    ldout(cct, 1) << __func__ << " TSO is supported" << __FFL__ << dendl;
     _hw_features.tx_tso = 1;
   }
 
@@ -345,13 +345,13 @@ int DPDKDevice::init_port_start()
           !(_dev_info.tx_offload_capa & DEV_TX_OFFLOAD_TCP_CKSUM));
 
   if (_dev_info.tx_offload_capa & DEV_TX_OFFLOAD_TCP_CKSUM) {
-    ldout(cct, 1) << __func__ << " TX TCP checksum offload supported" << dendl;
+    ldout(cct, 1) << __func__ << " TX TCP checksum offload supported" << __FFL__ << dendl;
     _hw_features.tx_csum_l4_offload = 1;
   }
 
   int retval;
 
-  ldout(cct, 1) << __func__ << " Port " << int(_port_idx) << " init ... " << dendl;
+  ldout(cct, 1) << __func__ << " Port " << int(_port_idx) << " init ... " << __FFL__ << dendl;
 
   /*
    * Standard DPDK port initialisation - config port, then set up
@@ -360,12 +360,12 @@ int DPDKDevice::init_port_start()
   if ((retval = rte_eth_dev_configure(_port_idx, _num_queues, _num_queues,
                                       &port_conf)) != 0) {
     lderr(cct) << __func__ << " failed to configure port " << (int)_port_idx
-               << " rx/tx queues " << _num_queues << " error " << cpp_strerror(retval) << dendl;
+               << " rx/tx queues " << _num_queues << " error " << cpp_strerror(retval) << __FFL__ << dendl;
     return retval;
   }
 
   //rte_eth_promiscuous_enable(port_num);
-  ldout(cct, 1) << __func__ << " done." << dendl;
+  ldout(cct, 1) << __func__ << " done." << __FFL__ << dendl;
 
   return 0;
 }
@@ -378,13 +378,13 @@ void DPDKDevice::set_hw_flow_control()
 
   if (ret == -ENOTSUP) {
     ldout(cct, 1) << __func__ << " port " << int(_port_idx)
-                  << ": not support to get hardware flow control settings: " << ret << dendl;
+                  << ": not support to get hardware flow control settings: " << ret << __FFL__ << dendl;
     goto not_supported;
   }
 
   if (ret < 0) {
     lderr(cct) << __func__ << " port " << int(_port_idx)
-               << ": failed to get hardware flow control settings: " << ret << dendl;
+               << ": failed to get hardware flow control settings: " << ret << __FFL__ << dendl;
     ceph_abort();
   }
 
@@ -397,21 +397,21 @@ void DPDKDevice::set_hw_flow_control()
   ret = rte_eth_dev_flow_ctrl_set(_port_idx, &fc_conf);
   if (ret == -ENOTSUP) {
     ldout(cct, 1) << __func__ << " port " << int(_port_idx)
-                  << ": not support to set hardware flow control settings: " << ret << dendl;
+                  << ": not support to set hardware flow control settings: " << ret << __FFL__ << dendl;
     goto not_supported;
   }
 
   if (ret < 0) {
     lderr(cct) << __func__ << " port " << int(_port_idx)
-               << ": failed to set hardware flow control settings: " << ret << dendl;
+               << ": failed to set hardware flow control settings: " << ret << __FFL__ << dendl;
     ceph_abort();
   }
 
-  ldout(cct, 1) << __func__ << " port " << int(_port_idx) << ":  HW FC " << _enable_fc << dendl;
+  ldout(cct, 1) << __func__ << " port " << int(_port_idx) << ":  HW FC " << _enable_fc << __FFL__ << dendl;
   return;
 
 not_supported:
-  ldout(cct, 1) << __func__ << " port " << int(_port_idx) << ": changing HW FC settings is not supported" << dendl;
+  ldout(cct, 1) << __func__ << " port " << int(_port_idx) << ": changing HW FC settings is not supported" << __FFL__ << dendl;
 }
 
 int DPDKDevice::init_port_fini()
@@ -420,13 +420,13 @@ int DPDKDevice::init_port_fini()
   set_hw_flow_control();
 
   if (rte_eth_dev_start(_port_idx) != 0) {
-    lderr(cct) << __func__ << " can't start port " << _port_idx << dendl;
+    lderr(cct) << __func__ << " can't start port " << _port_idx << __FFL__ << dendl;
     return -1;
   }
 
   if (_num_queues > 1) {
     if (!rte_eth_dev_filter_supported(_port_idx, RTE_ETH_FILTER_HASH)) {
-      ldout(cct, 5) << __func__ << " Port " << _port_idx << ": HASH FILTER configuration is supported" << dendl;
+      ldout(cct, 5) << __func__ << " Port " << _port_idx << ": HASH FILTER configuration is supported" << __FFL__ << dendl;
 
       // Setup HW touse the TOEPLITZ hash function as an RSS hash function
       struct rte_eth_hash_filter_info info = {};
@@ -436,7 +436,7 @@ int DPDKDevice::init_port_fini()
 
       if (rte_eth_dev_filter_ctrl(_port_idx, RTE_ETH_FILTER_HASH,
                                   RTE_ETH_FILTER_SET, &info) < 0) {
-        lderr(cct) << __func__ << " cannot set hash function on a port " << _port_idx << dendl;
+        lderr(cct) << __func__ << " cannot set hash function on a port " << _port_idx << __FFL__ << dendl;
         return -1;
       }
     }
@@ -446,11 +446,11 @@ int DPDKDevice::init_port_fini()
 
   // Wait for a link
   if (check_port_link_status() < 0) {
-    lderr(cct) << __func__ << " port link up failed " << _port_idx << dendl;
+    lderr(cct) << __func__ << " port link up failed " << _port_idx << __FFL__ << dendl;
     return -1;
   }
 
-  ldout(cct, 5) << __func__ << " created DPDK device" << dendl;
+  ldout(cct, 5) << __func__ << " created DPDK device" << __FFL__ << dendl;
   return 0;
 }
 
@@ -502,7 +502,7 @@ bool DPDKQueuePair::init_rx_mbuf_pool()
   _pktmbuf_pool_rx = rte_mempool_lookup(name.c_str());
   if (!_pktmbuf_pool_rx) {
     ldout(cct, 1) << __func__ << " Creating Rx mbuf pool '" << name.c_str()
-                  << "' [" << mbufs_per_queue_rx << " mbufs] ..."<< dendl;
+                  << "' [" << mbufs_per_queue_rx << " mbufs] ..."<< __FFL__ << dendl;
 
     //
     // Don't pass single-producer/single-consumer flags to mbuf create as it
@@ -519,7 +519,7 @@ bool DPDKQueuePair::init_rx_mbuf_pool()
         rte_pktmbuf_init, nullptr,
         rte_socket_id(), 0);
     if (!_pktmbuf_pool_rx) {
-      lderr(cct) << __func__ << " Failed to create mempool for rx" << dendl;
+      lderr(cct) << __func__ << " Failed to create mempool for rx" << __FFL__ << dendl;
       return false;
     }
 
@@ -543,7 +543,7 @@ bool DPDKQueuePair::init_rx_mbuf_pool()
     for (auto&& m : _rx_free_bufs) {
       if (!init_noninline_rx_mbuf(m, mbuf_data_size, _alloc_bufs)) {
         lderr(cct) << __func__ << " Failed to allocate data buffers for Rx ring. "
-                   "Consider increasing the amount of memory." << dendl;
+                   "Consider increasing the amount of memory." << __FFL__ << dendl;
         return false;
       }
     }
@@ -555,12 +555,12 @@ bool DPDKQueuePair::init_rx_mbuf_pool()
     if (rte_eth_rx_queue_setup(_dev_port_idx, _qid, default_ring_size,
                                rte_eth_dev_socket_id(_dev_port_idx),
                                _dev->def_rx_conf(), _pktmbuf_pool_rx) < 0) {
-      lderr(cct) << __func__ << " cannot initialize rx queue" << dendl;
+      lderr(cct) << __func__ << " cannot initialize rx queue" << __FFL__ << dendl;
       return false;
     }
   }
 
-  ldout(cct, 20) << __func__ << " count " << rte_mempool_count(_pktmbuf_pool_rx) << " free count " << rte_mempool_free_count(_pktmbuf_pool_rx) << dendl;
+  ldout(cct, 20) << __func__ << " count " << rte_mempool_count(_pktmbuf_pool_rx) << " free count " << rte_mempool_free_count(_pktmbuf_pool_rx) << __FFL__ << dendl;
   return _pktmbuf_pool_rx != nullptr;
 }
 
@@ -568,7 +568,7 @@ int DPDKDevice::check_port_link_status()
 {
   int count = 0;
 
-  ldout(cct, 20) << __func__ << dendl;
+  ldout(cct, 20) << __func__ << __FFL__ << dendl;
   const int sleep_time = 100 * 1000;
   const int max_check_time = 90;  /* 9s (90 * 100ms) in total */
   while (true) {
@@ -583,13 +583,13 @@ int DPDKDevice::check_port_link_status()
                       << " link Up - speed " << link.link_speed
                       << " Mbps - "
                       << ((link.link_duplex == ETH_LINK_FULL_DUPLEX) ? ("full-duplex") : ("half-duplex\n"))
-                      << dendl;
+                      << __FFL__ << dendl;
         break;
       } else if (count++ < max_check_time) {
-        ldout(cct, 20) << __func__ << " not ready, continue to wait." << dendl;
+        ldout(cct, 20) << __func__ << " not ready, continue to wait." << __FFL__ << dendl;
         usleep(sleep_time);
       } else {
-        lderr(cct) << __func__ << "done port " << _port_idx << " link down" << dendl;
+        lderr(cct) << __func__ << "done port " << _port_idx << " link down" << __FFL__ << dendl;
         return -1;
       }
     }
@@ -612,7 +612,7 @@ DPDKQueuePair::DPDKQueuePair(CephContext *c, EventCenter *cen, DPDKDevice* dev, 
     _tx_gc_poller(this)
 {
   if (!init_rx_mbuf_pool()) {
-    lderr(cct) << __func__ << " cannot initialize mbuf pools" << dendl;
+    lderr(cct) << __func__ << " cannot initialize mbuf pools" << __FFL__ << dendl;
     ceph_abort();
   }
 
@@ -656,12 +656,12 @@ DPDKQueuePair::DPDKQueuePair(CephContext *c, EventCenter *cen, DPDKDevice* dev, 
 
 void DPDKQueuePair::handle_stats()
 {
-  ldout(cct, 20) << __func__ << " started." << dendl;
+  ldout(cct, 20) << __func__ << " started." << __FFL__ << dendl;
   rte_eth_stats rte_stats = {};
   int rc = rte_eth_stats_get(_dev_port_idx, &rte_stats);
 
   if (rc) {
-    ldout(cct, 0) << __func__ << " failed to get port statistics: " << cpp_strerror(rc) << dendl;
+    ldout(cct, 0) << __func__ << " failed to get port statistics: " << cpp_strerror(rc) << __FFL__ << dendl;
     return ;
   }
 
@@ -693,7 +693,7 @@ bool DPDKQueuePair::poll_tx() {
         if (p) {
           work++;
           if (likely(nonloopback)) {
-            // ldout(cct, 0) << __func__ << " len: " << p->len() << " frags: " << p->nr_frags() << dendl;
+            // ldout(cct, 0) << __func__ << " len: " << p->len() << " frags: " << p->nr_frags() << __FFL__ << dendl;
             _tx_packetq.push_back(std::move(*p));
           } else {
             auto th = p->get_header<eth_hdr>(0);
@@ -785,7 +785,7 @@ bool DPDKQueuePair::rx_gc(bool force)
                    << " free pkts " << _rx_free_pkts.size()
                    << " pool count " << rte_mempool_count(_pktmbuf_pool_rx)
                    << " free pool count " << rte_mempool_free_count(_pktmbuf_pool_rx)
-                   << dendl;
+                   << __FFL__ << dendl;
 
     while (!_rx_free_pkts.empty()) {
       //
@@ -797,7 +797,7 @@ bool DPDKQueuePair::rx_gc(bool force)
       _rx_free_pkts.pop_back();
 
       if (!refill_one_cluster(m)) {
-        ldout(cct, 1) << __func__ << " get new mbuf failed " << dendl;
+        ldout(cct, 1) << __func__ << " get new mbuf failed " << __FFL__ << dendl;
         break;
       }
     }
@@ -839,7 +839,7 @@ void DPDKQueuePair::process_packets(
       perf_logger->inc(l_dpdk_qp_rx_no_memory_errors);
       continue;
     }
-    // ldout(cct, 0) << __func__ << " len " << p->len() << " " << dendl;
+    // ldout(cct, 0) << __func__ << " len " << p->len() << " " << __FFL__ << dendl;
 
     nr_frags += m->nb_segs;
     bytes    += m->pkt_len;
@@ -899,7 +899,7 @@ bool DPDKQueuePair::poll_rx_once()
     if (rx_count > 10000 && tx_count) {
       ldout(cct, 0) << __func__ << " rx count=" << rx_count << " avg rx=" << Cycles::to_nanoseconds(rx_cycles)/rx_count << "ns "
                     << " tx count=" << tx_count << " avg tx=" << Cycles::to_nanoseconds(tx_cycles)/tx_count << "ns"
-                    << dendl;
+                    << __FFL__ << dendl;
       rx_count = rx_cycles = tx_count = tx_cycles = 0;
     }
   }
@@ -916,7 +916,7 @@ DPDKQueuePair::tx_buf_factory::tx_buf_factory(CephContext *c,
   _pool = rte_mempool_lookup(name.c_str());
   if (!_pool) {
     ldout(cct, 0) << __func__ << " Creating Tx mbuf pool '" << name.c_str()
-                  << "' [" << mbufs_per_queue_tx << " mbufs] ..." << dendl;
+                  << "' [" << mbufs_per_queue_tx << " mbufs] ..." << __FFL__ << dendl;
     //
     // We are going to push the buffers from the mempool into
     // the circular_buffer and then poll them from there anyway, so
@@ -931,13 +931,13 @@ DPDKQueuePair::tx_buf_factory::tx_buf_factory(CephContext *c,
                                rte_socket_id(), 0);
 
     if (!_pool) {
-      lderr(cct) << __func__ << " Failed to create mempool for Tx" << dendl;
+      lderr(cct) << __func__ << " Failed to create mempool for Tx" << __FFL__ << dendl;
       ceph_abort();
     }
     if (rte_eth_tx_queue_setup(dev->port_idx(), qid, default_ring_size,
                                rte_eth_dev_socket_id(dev->port_idx()),
                                dev->def_tx_conf()) < 0) {
-      lderr(cct) << __func__ << " cannot initialize tx queue" << dendl;
+      lderr(cct) << __func__ << " cannot initialize tx queue" << __FFL__ << dendl;
       ceph_abort();
     }
   }
@@ -1074,11 +1074,11 @@ DPDKQueuePair::tx_buf* DPDKQueuePair::tx_buf::from_packet_zc(
   //
   if (!check_frag0(p)) {
     if (!copy_one_frag(qp, p.frag(0), head, last_seg, nsegs)) {
-      ldout(cct, 1) << __func__ << " no available mbuf for " << p.frag(0).size << dendl;
+      ldout(cct, 1) << __func__ << " no available mbuf for " << p.frag(0).size << __FFL__ << dendl;
       return nullptr;
     }
   } else if (!translate_one_frag(qp, p.frag(0), head, last_seg, nsegs)) {
-    ldout(cct, 1) << __func__ << " no available mbuf for " << p.frag(0).size << dendl;
+    ldout(cct, 1) << __func__ << " no available mbuf for " << p.frag(0).size << __FFL__ << dendl;
     return nullptr;
   }
 
@@ -1087,7 +1087,7 @@ DPDKQueuePair::tx_buf* DPDKQueuePair::tx_buf::from_packet_zc(
   for (unsigned i = 1; i < p.nr_frags(); i++) {
     rte_mbuf *h = nullptr, *new_last_seg = nullptr;
     if (!translate_one_frag(qp, p.frag(i), h, new_last_seg, nsegs)) {
-      ldout(cct, 1) << __func__ << " no available mbuf for " << p.frag(i).size << dendl;
+      ldout(cct, 1) << __func__ << " no available mbuf for " << p.frag(i).size << __FFL__ << dendl;
       me(head)->recycle();
       return nullptr;
     }
@@ -1285,7 +1285,7 @@ std::unique_ptr<DPDKDevice> create_dpdk_net_device(
   if (rte_eth_dev_count() == 0) {
     rte_exit(EXIT_FAILURE, "No Ethernet ports - bye\n");
   } else {
-    ldout(cct, 10) << __func__ << " ports number: " << int(rte_eth_dev_count()) << dendl;
+    ldout(cct, 10) << __func__ << " ports number: " << int(rte_eth_dev_count()) << __FFL__ << dendl;
   }
 
   return std::unique_ptr<DPDKDevice>(

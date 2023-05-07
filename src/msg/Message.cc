@@ -293,20 +293,20 @@ Message *decode_message(CephContext *cct, int crcflags,
     if (front_crc != footer.front_crc) {
       if (cct) {
 	ldout(cct, 0) << "bad crc in front " << front_crc << " != exp " << footer.front_crc
-		      << " from " << conn->get_peer_addr() << dendl;
+		      << " from " << conn->get_peer_addr() << __FFL__ << dendl;
 	ldout(cct, 20) << " ";
 	front.hexdump(*_dout);
-	*_dout << dendl;
+	*_dout << __FFL__ << dendl;
       }
       return 0;
     }
     if (middle_crc != footer.middle_crc) {
       if (cct) {
 	ldout(cct, 0) << "bad crc in middle " << middle_crc << " != exp " << footer.middle_crc
-		      << " from " << conn->get_peer_addr() << dendl;
+		      << " from " << conn->get_peer_addr() << __FFL__ << dendl;
 	ldout(cct, 20) << " ";
 	middle.hexdump(*_dout);
-	*_dout << dendl;
+	*_dout << __FFL__ << dendl;
       }
       return 0;
     }
@@ -317,10 +317,10 @@ Message *decode_message(CephContext *cct, int crcflags,
       if (data_crc != footer.data_crc) {
 	if (cct) {
 	  ldout(cct, 0) << "bad crc in data " << data_crc << " != exp " << footer.data_crc
-			<< " from " << conn->get_peer_addr() << dendl;
+			<< " from " << conn->get_peer_addr() << __FFL__ << dendl;
 	  ldout(cct, 20) << " ";
 	  data.hexdump(*_dout);
-	  *_dout << dendl;
+	  *_dout << __FFL__ << dendl;
 	}
 	return 0;
       }
@@ -822,7 +822,7 @@ Message *decode_message(CephContext *cct, int crcflags,
 
   default:
     if (cct) {
-      ldout(cct, 0) << "can't decode unknown message type " << type << " MSG_AUTH=" << CEPH_MSG_AUTH << dendl;
+      ldout(cct, 0) << "can't decode unknown message type " << type << " MSG_AUTH=" << CEPH_MSG_AUTH << __FFL__ << dendl;
       if (cct->_conf->ms_die_on_bad_msg)
 	ceph_abort();
     }
@@ -840,7 +840,7 @@ Message *decode_message(CephContext *cct, int crcflags,
       ldout(cct, 0) << "will not decode message of type " << type
 		    << " version " << header.version
 		    << " because compat_version " << header.compat_version
-		    << " > supported version " << m->get_header().version << dendl;
+		    << " > supported version " << m->get_header().version << __FFL__ << dendl;
       if (cct->_conf->ms_die_on_bad_msg)
 	ceph_abort();
     }
@@ -862,10 +862,10 @@ Message *decode_message(CephContext *cct, int crcflags,
     if (cct) {
       lderr(cct) << "failed to decode message of type " << type
 		 << " v" << header.version
-		 << ": " << e.what() << dendl;
+		 << ": " << e.what() << __FFL__ << dendl;
       ldout(cct, cct->_conf->ms_dump_corrupt_message_level) << "dump: \n";
       m->get_payload().hexdump(*_dout);
-      *_dout << dendl;
+      *_dout << __FFL__ << dendl;
       if (cct->_conf->ms_die_on_bad_msg)
 	ceph_abort();
     }

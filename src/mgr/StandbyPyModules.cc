@@ -57,20 +57,20 @@ void StandbyPyModules::shutdown()
   for (auto &i : modules) {
     auto module = i.second.get();
     const auto& name = i.first;
-    dout(10) << "waiting for module " << name << " to shutdown" << dendl;
+    dout(10) << "waiting for module " << name << " to shutdown" << __FFL__ << dendl;
     lock.Unlock();
     module->shutdown();
     lock.Lock();
-    dout(10) << "module " << name << " shutdown" << dendl;
+    dout(10) << "module " << name << " shutdown" << __FFL__ << dendl;
   }
 
   // For modules implementing serve(), finish the threads where we
   // were running that.
   for (auto &i : modules) {
     lock.Unlock();
-    dout(10) << "joining thread for module " << i.first << dendl;
+    dout(10) << "joining thread for module " << i.first << __FFL__ << dendl;
     i.second->thread.join();
-    dout(10) << "joined thread for module " << i.first << dendl;
+    dout(10) << "joined thread for module " << i.first << __FFL__ << dendl;
     lock.Lock();
   }
 
@@ -98,7 +98,7 @@ int StandbyPyModules::start_one(std::string const &module_name,
     modules.erase(module_name);
     return r;
   } else {
-    dout(4) << "Starting thread for " << module_name << dendl;
+    dout(4) << "Starting thread for " << module_name << __FFL__ << dendl;
     // Giving Thread the module's module_name member as its
     // char* thread name: thread must not outlive module class lifetime.
     modules[module_name]->thread.create(
@@ -124,18 +124,18 @@ int StandbyPyModule::load()
   pClassInstance = PyObject_CallObject(pClass, pArgs);
   Py_DECREF(pArgs);
   if (pClassInstance == nullptr) {
-    derr << "Failed to construct class in '" << module_name << "'" << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << "Failed to construct class in '" << module_name << "'" << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
     return -EINVAL;
   } else {
-    dout(1) << "Constructed class from module: " << module_name << dendl;
+    dout(1) << "Constructed class from module: " << module_name << __FFL__ << dendl;
     return 0;
   }
 }
 
 void *StandbyPyModules::LoadConfigThread::entry()
 {
-  dout(10) << "listing keys" << dendl;
+  dout(10) << "listing keys" << __FFL__ << dendl;
   JSONCommand cmd;
   cmd.run(monc, "{\"prefix\": \"config-key ls\"}");
   cmd.wait();
@@ -145,12 +145,12 @@ void *StandbyPyModules::LoadConfigThread::entry()
   
   for (auto &key_str : cmd.json_result.get_array()) {
     std::string const key = key_str.get_str();
-    dout(20) << "saw key '" << key << "'" << dendl;
+    dout(20) << "saw key '" << key << "'" << __FFL__ << dendl;
 
     const std::string config_prefix = PyModuleRegistry::config_prefix;
 
     if (key.substr(0, config_prefix.size()) == config_prefix) {
-      dout(20) << "fetching '" << key << "'" << dendl;
+      dout(20) << "fetching '" << key << "'" << __FFL__ << dendl;
       Command get_cmd;
       std::ostringstream cmd_json;
       cmd_json << "{\"prefix\": \"config-key get\", \"key\": \"" << key << "\"}";
@@ -171,7 +171,7 @@ bool StandbyPyModule::get_config(const std::string &key,
   const std::string global_key = PyModuleRegistry::config_prefix
     + module_name + "/" + key;
 
-  dout(4) << __func__ << "key: " << global_key << dendl;
+  dout(4) << __func__ << "key: " << global_key << __FFL__ << dendl;
 
   return state.with_config([global_key, value](const PyModuleConfig &config){
     if (config.count(global_key)) {

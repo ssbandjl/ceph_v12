@@ -243,7 +243,7 @@ int PosixWorker::listen(entity_addr_t &sa, const SocketOptions &opt,
   if (r < 0) {
     r = -errno;
     ldout(cct, 10) << __func__ << " unable to bind to " << sa.get_sockaddr()
-                   << ": " << cpp_strerror(r) << dendl;
+                   << ": " << cpp_strerror(r) << __FFL__ << dendl;
     ::close(listen_sd);
     return r;
   }
@@ -251,7 +251,7 @@ int PosixWorker::listen(entity_addr_t &sa, const SocketOptions &opt,
   r = ::listen(listen_sd, cct->_conf->ms_tcp_listen_backlog);
   if (r < 0) {
     r = -errno;
-    lderr(cct) << __func__ << " unable to listen on " << sa << ": " << cpp_strerror(r) << dendl;
+    lderr(cct) << __func__ << " unable to listen on " << sa << ": " << cpp_strerror(r) << __FFL__ << dendl;
     ::close(listen_sd);
     return r;
   }
@@ -292,6 +292,6 @@ PosixNetworkStack::PosixNetworkStack(CephContext *c, const string &t)
     if (err == "")
       coreids.push_back(coreid);
     else
-      lderr(cct) << __func__ << " failed to parse " << corestr << " in " << cct->_conf->ms_async_affinity_cores << dendl;
+      lderr(cct) << __func__ << " failed to parse " << corestr << " in " << cct->_conf->ms_async_affinity_cores << __FFL__ << dendl;
   }
 }

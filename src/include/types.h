@@ -24,6 +24,13 @@
 #include <fcntl.h>
 #include <string.h>
 
+#ifndef __FILENAME__
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+#ifndef __FFL__
+#define __FFL__ "" << __func__ << " " << __FILENAME__ << ":" << __LINE__
+#endif
+
 // <macro hackery>
 // temporarily remap __le* to ceph_le* for benefit of shared kernel/userland headers
 #define __le16 ceph_le16

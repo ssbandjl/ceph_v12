@@ -146,7 +146,7 @@ int ipv4::handle_received_packet(Packet p, ethernet_address from)
                  << std::dec << " packet from "
                  << h.src_ip << " -> " << h.dst_ip << " id=" << h.id
                  << " ip_len=" << ip_len << " ip_hdr_len=" << ip_hdr_len
-                 << " pkt_len=" << pkt_len << " offset=" << offset << dendl;
+                 << " pkt_len=" << pkt_len << " offset=" << offset << __FFL__ << dendl;
 
   if (pkt_len > ip_len) {
     // Trim extra data in the packet beyond IP total length
@@ -162,7 +162,7 @@ int ipv4::handle_received_packet(Packet p, ethernet_address from)
 
   // FIXME: process options
   if (in_my_netmask(h.src_ip) && h.src_ip != _host_address) {
-    ldout(cct, 20) << __func__ << " learn mac " << from << " with " << h.src_ip << dendl;
+    ldout(cct, 20) << __func__ << " learn mac " << from << " with " << h.src_ip << __FFL__ << dendl;
     _arp.learn(from, h.src_ip);
   }
 
@@ -289,7 +289,7 @@ void ipv4::send(ipv4_address to, ip_protocol_num proto_num,
     iph->src_ip = _host_address;
     iph->dst_ip = to;
     ldout(cct, 20) << " ipv4::send " << " id=" << iph->id << " " << _host_address << " -> " << to
-                   << " len " << pkt.len() << dendl;
+                   << " len " << pkt.len() << __FFL__ << dendl;
     *iph = iph->hton();
 
     if (get_hw_features().tx_csum_ip_offload) {
@@ -333,7 +333,7 @@ Tub<l3_protocol::l3packet> ipv4::get_packet() {
         _pkt_provider_idx = 0;
       }
       if (l4p) {
-        ldout(cct, 20) << " ipv4::get_packet len " << l4p->p.len() << dendl;
+        ldout(cct, 20) << " ipv4::get_packet len " << l4p->p.len() << __FFL__ << dendl;
         send(l4p->to, l4p->proto_num, std::move(l4p->p), l4p->e_dst);
         break;
       }

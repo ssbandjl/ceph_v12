@@ -113,7 +113,7 @@ void DaemonStateIndex::cull(const std::string& svc_name,
   }
 
   for (auto &i : victims) {
-    dout(4) << "Removing data for " << i << dendl;
+    dout(4) << "Removing data for " << i << __FFL__ << dendl;
     _erase({svc_name, i});
   }
 }
@@ -123,7 +123,7 @@ void DaemonPerfCounters::update(MMgrReport *report)
   dout(20) << "loading " << report->declare_types.size() << " new types, "
 	   << report->undeclare_types.size() << " old types, had "
 	   << types.size() << " types, got "
-           << report->packed.length() << " bytes of data" << dendl;
+           << report->packed.length() << " bytes of data" << __FFL__ << dendl;
 
   // Retrieve session state
   auto priv = report->get_connection()->get_priv();

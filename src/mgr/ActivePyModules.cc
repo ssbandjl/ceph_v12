@@ -86,7 +86,7 @@ PyObject *ActivePyModules::get_server_python(const std::string &hostname)
   PyThreadState *tstate = PyEval_SaveThread();
   Mutex::Locker l(lock);
   PyEval_RestoreThread(tstate);
-  dout(10) << " (" << hostname << ")" << dendl;
+  dout(10) << " (" << hostname << ")" << __FFL__ << dendl;
 
   auto dmc = daemon_state.get_by_server(hostname);
 
@@ -100,7 +100,7 @@ PyObject *ActivePyModules::list_servers_python()
 {
   PyFormatter f(false, true);
   PyThreadState *tstate = PyEval_SaveThread();
-  dout(10) << " >" << dendl;
+  dout(10) << " >" << __FFL__ << dendl;
 
   daemon_state.with_daemons_by_server([this, &f, &tstate]
       (const std::map<std::string, DaemonStateCollection> &all) {
@@ -124,7 +124,7 @@ PyObject *ActivePyModules::get_metadata_python(
 {
   auto metadata = daemon_state.get(DaemonKey(svc_type, svc_id));
   if (metadata == nullptr) {
-    derr << "Requested missing service " << svc_type << "." << svc_id << dendl;
+    derr << "Requested missing service " << svc_type << "." << svc_id << __FFL__ << dendl;
     Py_RETURN_NONE;
   }
 
@@ -144,7 +144,7 @@ PyObject *ActivePyModules::get_daemon_status_python(
 {
   auto metadata = daemon_state.get(DaemonKey(svc_type, svc_id));
   if (metadata == nullptr) {
-    derr << "Requested missing service " << svc_type << "." << svc_id << dendl;
+    derr << "Requested missing service " << svc_type << "." << svc_id << __FFL__ << dendl;
     Py_RETURN_NONE;
   }
 
@@ -329,7 +329,7 @@ PyObject *ActivePyModules::get_python(const std::string &what)
     });
     return f.get();
   } else {
-    derr << "Python module requested unknown data '" << what << "'" << dendl;
+    derr << "Python module requested unknown data '" << what << "'" << __FFL__ << dendl;
     PyEval_RestoreThread(tstate);
     Py_RETURN_NONE;
   }
@@ -350,7 +350,7 @@ int ActivePyModules::start_one(std::string const &module_name,
   if (r != 0) {
     return r;
   } else {
-    dout(4) << "Starting thread for " << module_name << dendl;
+    dout(4) << "Starting thread for " << module_name << __FFL__ << dendl;
     // Giving Thread the module's module_name member as its
     // char* thread name: thread must not outlive module class lifetime.
     modules[module_name]->thread.create(
@@ -370,9 +370,9 @@ void ActivePyModules::shutdown()
     const auto& name = i.first;
 
     lock.Unlock();
-    dout(10) << "calling module " << name << " shutdown()" << dendl;
+    dout(10) << "calling module " << name << " shutdown()" << __FFL__ << dendl;
     module->shutdown();
-    dout(10) << "module " << name << " shutdown() returned" << dendl;
+    dout(10) << "module " << name << " shutdown() returned" << __FFL__ << dendl;
     lock.Lock();
   }
 
@@ -380,9 +380,9 @@ void ActivePyModules::shutdown()
   // were running that.
   for (auto &i : modules) {
     lock.Unlock();
-    dout(10) << "joining module " << i.first << dendl;
+    dout(10) << "joining module " << i.first << __FFL__ << dendl;
     i.second->thread.join();
-    dout(10) << "joined module " << i.first << dendl;
+    dout(10) << "joined module " << i.first << __FFL__ << dendl;
     lock.Lock();
   }
 
@@ -394,7 +394,7 @@ void ActivePyModules::notify_all(const std::string &notify_type,
 {
   Mutex::Locker l(lock);
 
-  dout(10) << __func__ << ": notify_all " << notify_type << dendl;
+  dout(10) << __func__ << ": notify_all " << notify_type << __FFL__ << dendl;
   for (auto& i : modules) {
     auto module = i.second.get();
     // Send all python calls down a Finisher to avoid blocking
@@ -409,7 +409,7 @@ void ActivePyModules::notify_all(const LogEntry &log_entry)
 {
   Mutex::Locker l(lock);
 
-  dout(10) << __func__ << ": notify_all (clog)" << dendl;
+  dout(10) << __func__ << ": notify_all (clog)" << __FFL__ << dendl;
   for (auto& i : modules) {
     auto module = i.second.get();
     // Send all python calls down a Finisher to avoid blocking
@@ -430,7 +430,7 @@ bool ActivePyModules::get_config(const std::string &module_name,
   const std::string global_key = PyModuleRegistry::config_prefix
     + module_name + "/" + key;
 
-  dout(4) << __func__ << "key: " << global_key << dendl;
+  dout(4) << __func__ << "key: " << global_key << __FFL__ << dendl;
 
   Mutex::Locker l(lock);
 
@@ -452,7 +452,7 @@ PyObject *ActivePyModules::get_config_prefix(const std::string &module_name,
   const std::string base_prefix = PyModuleRegistry::config_prefix
                                     + module_name + "/";
   const std::string global_prefix = base_prefix + prefix;
-  dout(4) << __func__ << "prefix: " << global_prefix << dendl;
+  dout(4) << __func__ << "prefix: " << global_prefix << __FFL__ << dendl;
 
   PyFormatter f;
   for (auto p = config_cache.lower_bound(global_prefix);
@@ -500,8 +500,8 @@ void ActivePyModules::set_config(const std::string &module_name,
     // permission to set config keys
     // FIXME: should this somehow raise an exception back into Python land?
     dout(0) << "`config-key set " << global_key << " " << val << "` failed: "
-      << cpp_strerror(set_cmd.r) << dendl;
-    dout(0) << "mon returned " << set_cmd.r << ": " << set_cmd.outs << dendl;
+      << cpp_strerror(set_cmd.r) << __FFL__ << dendl;
+    dout(0) << "mon returned " << set_cmd.r << ": " << set_cmd.outs << __FFL__ << dendl;
   }
 }
 
@@ -586,15 +586,15 @@ PyObject* ActivePyModules::get_counter_python(
       }
     } else {
       dout(4) << "Missing counter: '" << path << "' ("
-              << svc_name << "." << svc_id << ")" << dendl;
-      dout(20) << "Paths are:" << dendl;
+              << svc_name << "." << svc_id << ")" << __FFL__ << dendl;
+      dout(20) << "Paths are:" << __FFL__ << dendl;
       for (const auto &i : metadata->perf_counters.instances) {
-        dout(20) << i.first << dendl;
+        dout(20) << i.first << __FFL__ << dendl;
       }
     }
   } else {
     dout(4) << "No daemon state for "
-              << svc_name << "." << svc_id << ")" << dendl;
+              << svc_name << "." << svc_id << ")" << __FFL__ << dendl;
   }
   f.close_section();
   return f.get();
@@ -651,7 +651,7 @@ PyObject* ActivePyModules::get_perf_schema_python(
     }
   } else {
     dout(4) << __func__ << ": No daemon state found for "
-              << svc_type << "." << svc_id << ")" << dendl;
+              << svc_type << "." << svc_id << ")" << __FFL__ << dendl;
   }
   return f.get();
 }
@@ -680,16 +680,16 @@ PyObject *construct_with_capsule(
   // Look up the OSDMap type which we will construct
   PyObject *module = PyImport_ImportModule(module_name.c_str());
   if (!module) {
-    derr << "Failed to import python module:" << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << "Failed to import python module:" << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
   }
   assert(module);
 
   PyObject *wrapper_type = PyObject_GetAttrString(
       module, (const char*)clsname.c_str());
   if (!wrapper_type) {
-    derr << "Failed to get python type:" << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << "Failed to get python type:" << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
   }
   assert(wrapper_type);
 
@@ -701,8 +701,8 @@ PyObject *construct_with_capsule(
   auto pArgs = PyTuple_Pack(1, wrapped_capsule);
   auto wrapper_instance = PyObject_CallObject(wrapper_type, pArgs);
   if (wrapper_instance == nullptr) {
-    derr << "Failed to construct python OSDMap:" << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << "Failed to construct python OSDMap:" << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
   }
   assert(wrapper_instance != nullptr);
   Py_DECREF(pArgs);
@@ -753,7 +753,7 @@ void ActivePyModules::set_uri(const std::string& module_name,
 {
   Mutex::Locker l(lock);
 
-  dout(4) << " module " << module_name << " set URI '" << uri << "'" << dendl;
+  dout(4) << " module " << module_name << " set URI '" << uri << "'" << __FFL__ << dendl;
 
   modules[module_name]->set_uri(uri);
 }

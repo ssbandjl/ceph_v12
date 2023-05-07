@@ -82,7 +82,7 @@ void log_dout(const char *file, unsigned line,
     const level_pair &lvl = LEVELS[level];
     ldout(context, lvl.second) << '[' << lvl.first << "] "
       << short_file << ':' << line << ' '
-      << function << " - " << buffer << dendl;
+      << function << " - " << buffer << __FFL__ << dendl;
   }
 }
 }
@@ -95,7 +95,7 @@ static int on_session_event(struct xio_session *session,
   CephContext *cct = msgr->cct;
 
   ldout(cct,4) << "session event: " << xio_session_event_str(event_data->event)
-    << ". reason: " << xio_strerror(event_data->reason) << dendl;
+    << ". reason: " << xio_strerror(event_data->reason) << __FFL__ << dendl;
 
   return msgr->session_event(session, event_data, cb_user_context);
 }
@@ -108,7 +108,7 @@ static int on_new_session(struct xio_session *session,
   CephContext *cct = msgr->cct;
 
   ldout(cct,4) << "new session " << session
-    << " user_context " << cb_user_context << dendl;
+    << " user_context " << cb_user_context << __FFL__ << dendl;
 
   return (msgr->new_session(session, req, cb_user_context));
 }
@@ -122,7 +122,7 @@ static int on_msg(struct xio_session *session,
     static_cast<XioConnection*>(cb_user_context);
   CephContext *cct = xcon->get_messenger()->cct;
 
-  ldout(cct,25) << "on_msg session " << session << " xcon " << xcon << dendl;
+  ldout(cct,25) << "on_msg session " << session << " xcon " << xcon << __FFL__ << dendl;
 
   if (unlikely(XioPool::trace_mempool)) {
     static uint32_t nreqs;
@@ -145,7 +145,7 @@ static int on_ow_msg_send_complete(struct xio_session *session,
 
   ldout(cct,25) << "msg delivered session: " << session
 		<< " msg: " << msg << " conn_user_context "
-		<< conn_user_context << dendl;
+		<< conn_user_context << __FFL__ << dendl;
 
   return xcon->on_ow_msg_send_complete(session, msg, conn_user_context);
 }
@@ -163,7 +163,7 @@ static int on_msg_error(struct xio_session *session,
 
   ldout(cct,4) << "msg error session: " << session
     << " error: " << xio_strerror(error) << " msg: " << msg
-    << " conn_user_context " << conn_user_context << dendl;
+    << " conn_user_context " << conn_user_context << __FFL__ << dendl;
 
   return xcon->on_msg_error(session, error, msg, conn_user_context);
 }
@@ -178,7 +178,7 @@ static int on_cancel(struct xio_session *session,
   CephContext *cct = xcon->get_messenger()->cct;
 
   ldout(cct,25) << "on cancel: session: " << session << " msg: " << msg
-    << " conn_user_context " << conn_user_context << dendl;
+    << " conn_user_context " << conn_user_context << __FFL__ << dendl;
 
   return 0;
 }
@@ -192,7 +192,7 @@ static int on_cancel_request(struct xio_session *session,
   CephContext *cct = xcon->get_messenger()->cct;
 
   ldout(cct,25) << "on cancel request: session: " << session << " msg: " << msg
-    << " conn_user_context " << conn_user_context << dendl;
+    << " conn_user_context " << conn_user_context << __FFL__ << dendl;
 
   return 0;
 }
@@ -279,7 +279,7 @@ void XioInit::package_init(CephContext *cct) {
                   &xopt, sizeof(xopt));
 
        xopt = XioMsgHdr::get_max_encoded_length();
-       ldout(cct,2) << "setting accelio max header size " << xopt << dendl;
+       ldout(cct,2) << "setting accelio max header size " << xopt << __FFL__ << dendl;
        xio_set_opt(NULL, XIO_OPTLEVEL_ACCELIO, XIO_OPTNAME_MAX_INLINE_XIO_HEADER,
                   &xopt, sizeof(xopt));
 
@@ -380,7 +380,7 @@ XioMessenger::XioMessenger(CephContext *cct, entity_name_t name,
     << nInstances << " type: " << name.type_str()
     << " subtype: " << mname << " nportals: " << get_nportals(cflags)
     << " nconns_per_portal: " << get_nconns_per_portal(cflags)
-    << dendl;
+    << __FFL__ << dendl;
 
 } /* ctor */
 
@@ -433,7 +433,7 @@ void XioMessenger::learned_addr(const entity_addr_t &peer_addr_for_me)
     entity_addr_t t = peer_addr_for_me;
     t.set_port(my_inst.addr.get_port());
     my_inst.addr.set_sockaddr(t.get_sockaddr());
-    ldout(cct,2) << "learned my addr " << my_inst.addr << dendl;
+    ldout(cct,2) << "learned my addr " << my_inst.addr << __FFL__ << dendl;
     need_addr = false;
     // init_local_connection();
   }
@@ -471,7 +471,7 @@ int XioMessenger::session_event(struct xio_session *session,
     xcon = static_cast<XioConnection*>(event_data->conn_user_context);
 
     ldout(cct,2) << "connection established " << event_data->conn
-      << " session " << session << " xcon " << xcon << dendl;
+      << " session " << session << " xcon " << xcon << __FFL__ << dendl;
 
     (void) xio_query_connection(conn, &xcona,
 				XIO_CONNECTION_ATTR_LOCAL_ADDR|
@@ -480,7 +480,7 @@ int XioMessenger::session_event(struct xio_session *session,
     paddr.set_sockaddr((struct sockaddr *)&xcona.peer_addr);
     //set_myaddr(peer_addr_for_me);
     learned_addr(peer_addr_for_me);
-    ldout(cct,2) << "client: connected from " << peer_addr_for_me << " to " << paddr << dendl;
+    ldout(cct,2) << "client: connected from " << peer_addr_for_me << " to " << paddr << __FFL__ << dendl;
 
     /* notify hook */
     this->ms_deliver_handle_connect(xcon);
@@ -530,8 +530,8 @@ int XioMessenger::session_event(struct xio_session *session,
     xcon->cstate.state_up_ready(XioConnection::CState::OP_FLAG_NONE);
 
     ldout(cct,2) << "New connection session " << session
-      << " xcon " << xcon << " on msgr: " << this << " portal: " << xcon->portal << dendl;
-    ldout(cct,2) << "Server: connected from " << s_inst.addr << " to " << peer_addr_for_me << dendl;
+      << " xcon " << xcon << " on msgr: " << this << " portal: " << xcon->portal << __FFL__ << dendl;
+    ldout(cct,2) << "Server: connected from " << s_inst.addr << " to " << peer_addr_for_me << __FFL__ << dendl;
   }
   break;
   case XIO_SESSION_CONNECTION_ERROR_EVENT:
@@ -540,7 +540,7 @@ int XioMessenger::session_event(struct xio_session *session,
   case XIO_SESSION_CONNECTION_REFUSED_EVENT:
     xcon = static_cast<XioConnection*>(event_data->conn_user_context);
     ldout(cct,2) << xio_session_event_str(event_data->event)
-      << " xcon " << xcon << " session " << session  << dendl;
+      << " xcon " << xcon << " session " << session  << __FFL__ << dendl;
     if (likely(!!xcon)) {
       unregister_xcon(xcon);
       xcon->on_disconnect_event();
@@ -549,7 +549,7 @@ int XioMessenger::session_event(struct xio_session *session,
   case XIO_SESSION_CONNECTION_TEARDOWN_EVENT:
     xcon = static_cast<XioConnection*>(event_data->conn_user_context);
     ldout(cct,2) << xio_session_event_str(event_data->event)
-      << " xcon " << xcon << " session " << session << dendl;
+      << " xcon " << xcon << " session " << session << __FFL__ << dendl;
     /*
      * There are flows where Accelio sends teardown event without going
      * through disconnect event. so we make sure we cleaned the connection.
@@ -559,7 +559,7 @@ int XioMessenger::session_event(struct xio_session *session,
     break;
   case XIO_SESSION_TEARDOWN_EVENT:
     ldout(cct,2) << xio_session_event_str(event_data->event)
-      << " session " << session << dendl;
+      << " session " << session << __FFL__ << dendl;
     if (unlikely(XioPool::trace_mempool)) {
       xp_stats.dump("xio session dtor", reinterpret_cast<uint64_t>(session));
     }
@@ -706,7 +706,7 @@ xio_place_buffers(const buffer::list& bl, XioMsg *xmsg, struct xio_msg*& req,
 int XioMessenger::bind(const entity_addr_t& addr)
 {
   if (addr.is_blank_ip()) {
-      lderr(cct) << "ERROR: need rdma ip for remote use! " << dendl;
+      lderr(cct) << "ERROR: need rdma ip for remote use! " << __FFL__ << dendl;
       cout << "Error: xio bind failed. public/cluster ip not specified" << std::endl;
       return -1;
   }
@@ -715,7 +715,7 @@ int XioMessenger::bind(const entity_addr_t& addr)
   string base_uri = xio_uri_from_entity(cct->_conf->xio_transport_type,
 					shift_addr, false /* want_port */);
   ldout(cct,4) << "XioMessenger " << this << " bind: xio_uri "
-    << base_uri << ':' << shift_addr.get_port() << dendl;
+    << base_uri << ':' << shift_addr.get_port() << __FFL__ << dendl;
 
   uint16_t port0;
   int r = portals.bind(&xio_msgr_ops, base_uri, shift_addr.get_port(), &port0);
@@ -731,7 +731,7 @@ int XioMessenger::bind(const entity_addr_t& addr)
 
 int XioMessenger::rebind(const set<int>& avoid_ports)
 {
-  ldout(cct,4) << "XioMessenger " << this << " rebind attempt" << dendl;
+  ldout(cct,4) << "XioMessenger " << this << " rebind attempt" << __FFL__ << dendl;
   return 0;
 } /* rebind */
 
@@ -844,7 +844,7 @@ int XioMessenger::_send_message_impl(Message* m, XioConnection* xcon)
   int ex_cnt = req_off;
   if (msg_off == 0 && ex_cnt > 0) {
     // no buffers for last msg
-    ldout(cct,10) << "msg_off 0, ex_cnt " << ex_cnt << " -> " << ex_cnt-1 << dendl;
+    ldout(cct,10) << "msg_off 0, ex_cnt " << ex_cnt << " -> " << ex_cnt-1 << __FFL__ << dendl;
     ex_cnt--;
   }
 
@@ -859,7 +859,7 @@ int XioMessenger::_send_message_impl(Message* m, XioConnection* xcon)
        << " tag " << (int)xmsg->hdr.tag
        << " req_0 " << xmsg->get_xio_msg() << " msg type " << m->get_type()
        << " features: " << xcon->get_features()
-       << " conn " << xcon->conn << " sess " << xcon->session << dendl;
+       << " conn " << xcon->conn << " sess " << xcon->session << __FFL__ << dendl;
 
   if (magic & (MSG_MAGIC_XIO)) {
 
@@ -867,9 +867,9 @@ int XioMessenger::_send_message_impl(Message* m, XioConnection* xcon)
     switch (m->get_type()) {
     case 43:
     // case 15:
-      ldout(cct,4) << __func__ << "stop 43 " << m->get_type() << " " << *m << dendl;
+      ldout(cct,4) << __func__ << "stop 43 " << m->get_type() << " " << *m << __FFL__ << dendl;
       buffer::list &payload = m->get_payload();
-      ldout(cct,4) << __func__ << "payload dump:" << dendl;
+      ldout(cct,4) << __func__ << "payload dump:" << __FFL__ << dendl;
       payload.hexdump(cout);
     }
   }
@@ -886,7 +886,7 @@ int XioMessenger::_send_message_impl(Message* m, XioConnection* xcon)
 
   if (unlikely(ex_cnt > 0)) {
     ldout(cct,4) << __func__ << " buffer cnt > XIO_MSGR_IOVLEN (" <<
-      ((XIO_MSGR_IOVLEN-1) + nbuffers) << ")" << dendl;
+      ((XIO_MSGR_IOVLEN-1) + nbuffers) << ")" << __FFL__ << dendl;
   }
 
   /* do the invariant part */
@@ -903,7 +903,7 @@ int XioMessenger::_send_message_impl(Message* m, XioConnection* xcon)
   xio_place_buffers(data, xmsg, req, msg_iov, req_size, ex_cnt, msg_off,
 		    req_off, BUFFER_DATA);
   ldout(cct,10) << "ex_cnt " << ex_cnt << ", req_off " << req_off
-    << ", msg_cnt " << xmsg->get_msg_count() << dendl;
+    << ", msg_cnt " << xmsg->get_msg_count() << __FFL__ << dendl;
 
   /* finalize request */
   if (msg_off)
@@ -986,7 +986,7 @@ ConnectionRef XioMessenger::get_connection(const entity_inst_t& dest)
 					 dest.addr, true /* want_port */);
 
     ldout(cct,4) << "XioMessenger " << this << " get_connection: xio_uri "
-      << xio_uri << dendl;
+      << xio_uri << __FFL__ << dendl;
 
     /* XXX client session creation parameters */
     struct xio_session_params params = {};
@@ -1033,7 +1033,7 @@ ConnectionRef XioMessenger::get_connection(const entity_inst_t& dest)
 
     ldout(cct,2) << "New connection xcon: " << xcon <<
       " up_ready on session " << xcon->session <<
-      " on msgr: " << this << " portal: " << xcon->portal << dendl;
+      " on msgr: " << this << " portal: " << xcon->portal << __FFL__ << dendl;
 
     return xcon->get(); /* nref +1 */
   }

@@ -48,7 +48,7 @@ uint64_t DispatchQueue::pre_dispatch(Message *m)
 	       << m->get_footer().middle_crc
 	       << " " << m->get_footer().data_crc << ")"
 	       << " " << m << " con " << m->get_connection()
-	       << dendl;
+	       << __FFL__ << dendl;
   uint64_t msize = m->get_dispatch_throttle_size();
   m->set_dispatch_throttle_size(0); // clear it out, in case we requeue this message.
   return msize;
@@ -57,7 +57,7 @@ uint64_t DispatchQueue::pre_dispatch(Message *m)
 void DispatchQueue::post_dispatch(Message *m, uint64_t msize)
 {
   dispatch_throttle_release(msize);
-  ldout(cct,20) << "done calling dispatch on " << m << dendl;
+  ldout(cct,20) << "done calling dispatch on " << m << __FFL__ << dendl;
 }
 
 bool DispatchQueue::can_fast_dispatch(const Message *m) const
@@ -81,7 +81,7 @@ void DispatchQueue::enqueue(Message *m, int priority, uint64_t id)
 {
 
   Mutex::Locker l(lock);
-  ldout(cct,20) << "queue " << m << " prio " << priority << dendl;
+  ldout(cct,20) << "queue " << m << " prio " << priority << __FFL__ << dendl;
   add_arrival(m);
   if (priority >= CEPH_MSG_PRIO_LOW) {
     mqueue.enqueue_strict(
@@ -134,7 +134,7 @@ void DispatchQueue::dispatch_throttle_release(uint64_t msize)
   if (msize) {
     ldout(cct,10) << __func__ << " " << msize << " to dispatch throttler "
 	    << dispatch_throttler.get_current() << "/"
-	    << dispatch_throttler.get_max() << dendl;
+	    << dispatch_throttler.get_max() << __FFL__ << dendl;
     dispatch_throttler.put(msize);
   }
 }
@@ -165,7 +165,7 @@ void DispatchQueue::entry()
 	  utime_t t;
 	  t.set_from_double(cct->_conf->ms_inject_internal_delays);
 	  ldout(cct, 1) << "DispatchQueue::entry  inject delay of " << t
-			<< dendl;
+			<< __FFL__ << dendl;
 	  t.sleep();
 	}
 	switch (qitem.get_code()) {
@@ -190,7 +190,7 @@ void DispatchQueue::entry()
       } else {
 	Message *m = qitem.get_message();
 	if (stop) {
-	  ldout(cct,10) << " stop flag set, discarding " << m << " " << *m << dendl;
+	  ldout(cct,10) << " stop flag set, discarding " << m << " " << *m << __FFL__ << dendl;
 	  m->put();
 	} else {
 	  uint64_t msize = pre_dispatch(m);
@@ -244,7 +244,7 @@ void DispatchQueue::discard_local()
   for (list<pair<Message *, int> >::iterator p = local_messages.begin();
        p != local_messages.end();
        ++p) {
-    ldout(cct,20) << __func__ << " " << p->first << dendl;
+    ldout(cct,20) << __func__ << " " << p->first << __FFL__ << dendl;
     p->first->put();
   }
   local_messages.clear();

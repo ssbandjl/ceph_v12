@@ -3,6 +3,8 @@
 # abort on failure
 set -e
 
+#export PATH=/home/xb/project/stor/ceph/ceph/build/bin:$PATH
+
 if [ -n "$VSTART_DEST" ]; then
   SRC_PATH=`dirname $0`
   SRC_PATH=`(cd $SRC_PATH; pwd)`
@@ -26,11 +28,13 @@ fi
 
 # use CEPH_BUILD_ROOT to vstart from a 'make install' 
 if [ -n "$CEPH_BUILD_ROOT" ]; then
+        echo -e "$CEPH_BUILD_ROOT vstart.sh:${LINENO}"
         [ -z "$CEPH_BIN" ] && CEPH_BIN=$CEPH_BUILD_ROOT/bin
         [ -z "$CEPH_LIB" ] && CEPH_LIB=$CEPH_BUILD_ROOT/lib
         [ -z "$EC_PATH" ] && EC_PATH=$CEPH_LIB/erasure-code
         [ -z "$OBJCLASS_PATH" ] && OBJCLASS_PATH=$CEPH_LIB/rados-classes
 elif [ -n "$CEPH_ROOT" ]; then
+        echo -e "$CEPH_ROOT vstart.sh:${LINENO}"
         [ -z "$PYBIND" ] && PYBIND=$CEPH_ROOT/src/pybind
         [ -z "$CEPH_BIN" ] && CEPH_BIN=$CEPH_BUILD_DIR/bin
         [ -z "$CEPH_ADM" ] && CEPH_ADM=$CEPH_BIN/ceph
@@ -323,6 +327,7 @@ shift
 done
 
 if [ $kill_all -eq 1 ]; then
+    echo -e "cmd:$SUDO $INIT_CEPH stop vstart.sh:${LINENO}"
     $SUDO $INIT_CEPH stop
 fi
 
@@ -342,6 +347,7 @@ if [ "$overwrite_conf" -eq 0 ]; then
 else
     if [ "$new" -ne 0 ]; then
         # only delete if -n
+        echo -e "new !=0 vstart.sh:${LINENO}"
         asok_dir=`dirname $($CEPH_BIN/ceph-conf --show-config-value admin_socket)`
         if [ $asok_dir != /var/run/ceph ]; then
             [ -d $asok_dir ] && rm -f $asok_dir/* && rmdir $asok_dir
@@ -370,6 +376,7 @@ prun() {
 }
 
 run() {
+    echo -e "run type:$1 vstart.sh:${LINENO}"
     type=$1
     shift
     eval "valg=\$valgrind_$type"
@@ -587,6 +594,7 @@ start_mon() {
 EOF
 			count=$(($count + 1))
 		done
+        echo -e "ceph.conf vstart.sh:${LINENO}\n$(cat ceph.conf)"
 		prun "$CEPH_BIN/monmaptool" --create --clobber $str --print "$monmap_fn"
 
 		for f in $MONS
@@ -646,6 +654,7 @@ EOF
 }
 
 start_mgr() {
+    echo -e "start_mgr vstart.sh:${LINENO}"
     local mgr=0
     # avoid monitors on nearby ports (which test/*.sh use extensively)
     MGR_PORT=$(($CEPH_PORT + 1000))
@@ -675,7 +684,7 @@ EOF
 	MGR_PORT=$(($MGR_PORT + 1000))
 
         echo "Starting mgr.${name}"
-        run 'mgr' $CEPH_BIN/ceph-mgr -i $name $ARGS
+        run 'mgr' $CEPH_BIN/ceph-mgr -i $name $ARGS " -d"
     done
 
     # use tell mgr here because the first mgr might not have activated yet
@@ -763,7 +772,7 @@ if [ "$debug" -eq 0 ]; then
     CMGRDEBUG='
         debug ms = 1'
 else
-    echo "** going verbose **"
+    echo "** going verbose ** vstart.sh:${LINENO}"
     CMONDEBUG='
         debug mon = 20
         debug paxos = 20
@@ -828,6 +837,9 @@ test -d $CEPH_DEV_DIR/osd0/. && test -e $CEPH_DEV_DIR/sudo && SUDO="sudo"
 
 prun $SUDO rm -f core*
 
+echo -e "delete old dir:rm -rf $CEPH_ASOK_DIR $CEPH_OUT_DIR $CEPH_DEV_DIR"
+rm -rf $CEPH_ASOK_DIR $CEPH_OUT_DIR $CEPH_DEV_DIR
+
 test -d $CEPH_ASOK_DIR || mkdir $CEPH_ASOK_DIR
 test -d $CEPH_OUT_DIR || mkdir $CEPH_OUT_DIR
 test -d $CEPH_DEV_DIR || mkdir $CEPH_DEV_DIR
@@ -870,6 +882,9 @@ ceph_adm() {
 if [ "$new" -eq 1 ]; then
     prepare_conf
 fi
+
+echo -e "ceph.conf vstart.sh:${LINENO}"
+cat ceph.conf
 
 if [ $CEPH_NUM_MON -gt 0 ]; then
     start_mon

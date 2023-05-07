@@ -46,7 +46,7 @@ Messenger *Messenger::create(CephContext *cct, const string &type,
 	   cct->check_experimental_feature_enabled("ms-type-xio"))
     return new XioMessenger(cct, name, std::move(lname), nonce, cflags);
 #endif
-  lderr(cct) << "unrecognized ms_type '" << type << "'" << dendl;
+  lderr(cct) << "unrecognized ms_type '" << type << "'" << __FFL__ << dendl;
   return nullptr;
 }
 

@@ -68,11 +68,11 @@ int ActivePyModule::load(ActivePyModules *py_modules)
   Py_DECREF(pModuleName);
   Py_DECREF(pArgs);
   if (pClassInstance == nullptr) {
-    derr << "Failed to construct class in '" << module_name << "'" << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << "Failed to construct class in '" << module_name << "'" << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
     return -EINVAL;
   } else {
-    dout(1) << "Constructed class from module: " << module_name << dendl;
+    dout(1) << "Constructed class from module: " << module_name << __FFL__ << dendl;
   }
 
   return load_commands();
@@ -92,8 +92,8 @@ void ActivePyModule::notify(const std::string &notify_type, const std::string &n
   if (pValue != NULL) {
     Py_DECREF(pValue);
   } else {
-    derr << module_name << ".notify:" << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << module_name << ".notify:" << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
     // FIXME: callers can't be expected to handle a python module
     // that has spontaneously broken, but Mgr() should provide
     // a hook to unload misbehaving modules when they have an
@@ -120,8 +120,8 @@ void ActivePyModule::notify_clog(const LogEntry &log_entry)
   if (pValue != NULL) {
     Py_DECREF(pValue);
   } else {
-    derr << module_name << ".notify_clog:" << dendl;
-    derr << handle_pyerror() << dendl;
+    derr << module_name << ".notify_clog:" << __FFL__ << dendl;
+    derr << handle_pyerror() << __FFL__ << dendl;
     // FIXME: callers can't be expected to handle a python module
     // that has spontaneously broken, but Mgr() should provide
     // a hook to unload misbehaving modules when they have an
@@ -137,14 +137,14 @@ int ActivePyModule::load_commands()
   if (command_list == nullptr) {
     // Even modules that don't define command should still have the COMMANDS
     // from the MgrModule definition.  Something is wrong!
-    derr << "Module " << get_name() << " has missing COMMANDS member" << dendl;
+    derr << "Module " << get_name() << " has missing COMMANDS member" << __FFL__ << dendl;
     return -EINVAL;
   }
   if (!PyObject_TypeCheck(command_list, &PyList_Type)) {
     // Relatively easy mistake for human to make, e.g. defining COMMANDS
     // as a {} instead of a []
     derr << "Module " << get_name() << " has COMMANDS member of wrong type ("
-            "should be a list)" << dendl;
+            "should be a list)" << __FFL__ << dendl;
     return -EINVAL;
   }
   const size_t list_size = PyList_Size(command_list);
@@ -158,7 +158,7 @@ int ActivePyModule::load_commands()
     assert(pCmd != nullptr);
     item.cmdstring = PyString_AsString(pCmd);
 
-    dout(20) << "loaded command " << item.cmdstring << dendl;
+    dout(20) << "loaded command " << item.cmdstring << __FFL__ << dendl;
 
     PyObject *pDesc = PyDict_GetItemString(command, "desc");
     assert(pDesc != nullptr);
@@ -174,7 +174,7 @@ int ActivePyModule::load_commands()
   }
   Py_DECREF(command_list);
 
-  dout(10) << "loaded " << commands.size() << " commands" << dendl;
+  dout(10) << "loaded " << commands.size() << " commands" << __FFL__ << dendl;
 
   return 0;
 }
