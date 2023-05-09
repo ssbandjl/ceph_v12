@@ -5587,8 +5587,8 @@ void OSD::heartbeat()
     i->second.last_tx = now;
     if (i->second.first_tx == utime_t())
       i->second.first_tx = now;
-    i->second.ping_history[now] = make_pair(deadline,
-      HeartbeatInfo::HEARTBEAT_MAX_CONN);
+    // i->second.ping_history[now] = make_pair(deadline, HeartbeatInfo::HEARTBEAT_MAX_CONN);
+    i->second.ping_history[now] = make_pair(deadline, 2);
     if (i->second.hb_interval_start == utime_t())
       i->second.hb_interval_start = now;
     dout(30) << "heartbeat sending ping to osd." << peer << dendl;

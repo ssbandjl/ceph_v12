@@ -14,9 +14,9 @@ fi
 
 mkdir build
 cd build
-ARGS+=" -DWITH_EVENTTRACE=ON"
-# ARGS+=" -DWITH_OSD_INSTRUMENT_FUNCTIONS=ON"
 ARGS+=" -DWITH_LTTNG=ON"
+ARGS+=" -DWITH_EVENTTRACE=ON"
+ARGS+=" -DWITH_OSD_INSTRUMENT_FUNCTIONS=ON"
 ARGS+=" -DWITH_BLKIN=ON"
 echo -e "cmd:cmake -DBOOST_J=$(nproc) $ARGS $@ .."
 cmake -DBOOST_J=$(nproc) $ARGS "$@" ..

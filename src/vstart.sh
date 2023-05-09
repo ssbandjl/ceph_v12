@@ -594,7 +594,6 @@ start_mon() {
 EOF
 			count=$(($count + 1))
 		done
-        echo -e "ceph.conf vstart.sh:${LINENO}\n$(cat ceph.conf)"
 		prun "$CEPH_BIN/monmaptool" --create --clobber $str --print "$monmap_fn"
 
 		for f in $MONS
@@ -837,7 +836,7 @@ test -d $CEPH_DEV_DIR/osd0/. && test -e $CEPH_DEV_DIR/sudo && SUDO="sudo"
 
 prun $SUDO rm -f core*
 
-echo -e "delete old dir:rm -rf $CEPH_ASOK_DIR $CEPH_OUT_DIR $CEPH_DEV_DIR"
+echo -e "\033[32m`date +'%Y/%m/%d %H:%M:%S'` delete old dir, rm -rf $CEPH_ASOK_DIR $CEPH_OUT_DIR $CEPH_DEV_DIR \033[0m"
 rm -rf $CEPH_ASOK_DIR $CEPH_OUT_DIR $CEPH_DEV_DIR
 
 test -d $CEPH_ASOK_DIR || mkdir $CEPH_ASOK_DIR
@@ -883,8 +882,8 @@ if [ "$new" -eq 1 ]; then
     prepare_conf
 fi
 
-echo -e "ceph.conf vstart.sh:${LINENO}"
-cat ceph.conf
+# echo -e "ceph.conf vstart.sh:${LINENO}"
+# cat ceph.conf
 
 if [ $CEPH_NUM_MON -gt 0 ]; then
     start_mon
@@ -1047,6 +1046,8 @@ fi
 
 echo "started.  stop.sh to stop.  see out/* (e.g. 'tail -f out/????') for debug output."
 
+echo -e "\033[32m`date +'%Y/%m/%d %H:%M:%S'` ceph.conf vstart.sh:${LINENO} \033[0m\n$(cat ceph.conf)"
+
 echo ""
 echo "dashboard urls: $DASH_URLS"
 echo "  restful urls: $RESTFUL_URLS"
@@ -1054,6 +1055,7 @@ echo "  w/ user/pass: admin / $RESTFUL_SECRET"
 echo ""
 echo "export PYTHONPATH=./pybind:$PYTHONPATH"
 echo "export LD_LIBRARY_PATH=$CEPH_LIB"
+echo ""
 
 if [ "$CEPH_DIR" != "$PWD" ]; then
     echo "export CEPH_CONF=$conf_fn"

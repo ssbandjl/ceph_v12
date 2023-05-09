@@ -327,10 +327,7 @@ wip_wheelhouse=wheelhouse-wip
 # preload python modules so that tox can run without network access
 #
 
-#change pip repo
-# pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
-# pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
+
 find . -name tox.ini | while read ini ; do
     (
         cd $(dirname $ini) # cd ./src/ceph-disk
@@ -347,6 +344,12 @@ find . -name tox.ini | while read ini ; do
                 type $interpreter > /dev/null 2>&1 || continue
                 echo -e "cmd:activate_virtualenv $top_srcdir $interpreter"
                 activate_virtualenv $top_srcdir $interpreter || exit 1
+                
+                #change pip repo
+                # pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+                pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+                # pip config set global.index-url http://mirrors.cloud.tencent.com/pypi/simple
+                
                 echo -e "cmd:populate_wheelhouse wheel -w $wip_wheelhouse $require"
                 populate_wheelhouse "wheel -w $wip_wheelhouse" $require || exit 1
             done
